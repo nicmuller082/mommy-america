@@ -1,0 +1,7 @@
+staticSites:
+  - name: mommy-america
+    repo: https://github.com/nicmuller082/mommy-america
+    branch: main
+    buildCommand: ""
+    publishPath: .
+    autoDeploy: true
