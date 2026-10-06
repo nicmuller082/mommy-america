@@ -47,7 +47,7 @@ function total() {
 
 function renderTable() {
   document.getElementById("priceBody").innerHTML = homes.map(h => `
-    <tr><td>${h.name}<div class="fine">${h.baths} bath${h.baths > 1 ? "s" : ""} included</div></td>${plans.map(p => `<td>${money(h.prices[p.id])}<div class="fine">${h.hours[p.id]} hrs</div></td>`).join("")}</tr>`).join("");
+    <tr><td>${h.name}<div class="fine">${h.baths} bathroom${h.baths > 1 ? "s" : ""} included</div></td>${plans.map(p => `<td>${money(h.prices[p.id])}<div class="fine">${h.hours[p.id]} hrs</div></td>`).join("")}</tr>`).join("");
 }
 function renderAddons() {
   document.getElementById("addonList").innerHTML = addons.map(a => `<div class="addon"><span><b>${a.name}</b><br><span class="fine">${a.note}</span></span><b>${money(a.price)}</b></div>`).join("");
@@ -61,22 +61,22 @@ function renderQuote() {
     <h3>${money(q.price)}</h3>
     <div class="line"><span>${q.home.name}</span><span></span></div>
     <div class="line"><span>${planName}</span><span>${q.hours} hrs</span></div>
-    <div class="line"><span>${q.home.baths} bath${q.home.baths > 1 ? "s" : ""} included</span><span>in price</span></div>
-    <div class="line"><span>Extra baths</span><span>${state.baths ? state.baths + " · " + money(state.baths * 15) : "—"}</span></div>
+    <div class="line"><span>${q.home.baths} bathroom${q.home.baths > 1 ? "s" : ""} included</span><span>in the price</span></div>
+    <div class="line"><span>Extra bathrooms</span><span>${state.baths ? state.baths + " · " + money(state.baths * 15) : "—"}</span></div>
     ${q.lines.map(l => `<div class="line"><span>${l.name}</span><span>${money(l.cost)}</span></div>`).join("")}
     <div class="line total"><span>Estimated total</span><span>${money(q.price)}</span></div>
     <p class="fine">About ${money(q.price / q.hours)} an hour for her time. Request holds on this phone until the calendar is live.</p>`;
 }
 
 function init() {
-  document.getElementById("home").innerHTML = homes.map(h => `<option value="${h.id}" ${h.id === "3" ? "selected" : ""}>${h.name} · ${h.baths} bath${h.baths > 1 ? "s" : ""} included</option>`).join("");
+  document.getElementById("home").innerHTML = homes.map(h => `<option value="${h.id}" ${h.id === "3" ? "selected" : ""}>${h.name} · ${h.baths} bathroom${h.baths > 1 ? "s" : ""} included</option>`).join("");
   document.getElementById("plan").innerHTML = plans.map(p => `<option value="${p.id}" ${p.id === "biweekly" ? "selected" : ""}>${p.name}</option>`).join("");
   renderTable();
   renderAddons();
   renderQuote();
   const showIncluded = () => {
     const home = selectedHome();
-    document.getElementById("bathNote").textContent = `${home.baths} bathroom${home.baths > 1 ? "s" : ""} included. Each extra bath is $15.`;
+    document.getElementById("bathNote").textContent = `${home.baths} bathroom${home.baths > 1 ? "s" : ""} included. Each extra bathroom is $15.`;
     renderQuote();
   };
   document.querySelectorAll("#quoteForm select, #quoteForm input").forEach(el => el.addEventListener("change", showIncluded));
