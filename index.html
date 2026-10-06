@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mommy America — Home cleaning in Cinco Ranch, Katy, Richmond & Sugar Land</title>
+<meta name="description" content="Flat-rate home cleaning by the person who shows up. Cinco Ranch, Katy, Richmond, and Sugar Land. Weekly, biweekly, deep, and move-out." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,640&family=Outfit:wght@360;480;560;640&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top">
+      <span class="mark" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 8.2 9 2.4l7 5.8V16H2V8.2Z" stroke="#F6F1EA" stroke-width="1.6"/><path d="M7.1 10.2c.7-1.3 3.1-1.3 3.8 0 .3.6.1 1.4-.6 1.8L9 13l-1.3-1c-.7-.4-.9-1.2-.6-1.8Z" fill="#C4654A"/></svg>
+      </span>
+      Mommy America
+    </a>
+    <nav class="links">
+      <a href="#plans">Plans</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#addons">Add-ons</a>
+      <a href="#quote">Quote</a>
+    </nav>
+    <a class="btn terra" href="#quote">Get a price</a>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero wrap">
+    <div>
+      <p class="eyebrow">Cinco Ranch · Katy · Richmond · Sugar Land</p>
+      <h1>A home that feels looked after.</h1>
+      <p class="lede">Flat-rate cleaning, slightly under the local company price. The same person who quotes the visit is the person who cleans it.</p>
+      <div class="hero-actions">
+        <a class="btn terra" href="#quote">Build a quote</a>
+        <a class="btn ghost" href="#pricing">See the rate card</a>
+      </div>
+      <p class="fine">Biweekly 3-bed from $165 · supplies included · beds made</p>
+    </div>
+    <figure class="hero-photo">
+      <img src="images/living.jpg" alt="Freshly cleaned living room" />
+      <figcaption>
+        <img src="images/cleaner.jpg" alt="Mommy America" />
+        <span><strong>She shows up.</strong> No rotating crew. A helper only if the book gets full.</span>
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="wrap stats">
+    <div><b>$165</b><span>3-bed, every 2 weeks</span></div>
+    <div><b>2 hr</b><span>Minimum visit</span></div>
+    <div><b>$8 off</b><span>If you supply products</span></div>
+    <div><b>4 zips</b><span>77450 · 77494 · 77407 · 77479</span></div>
+  </section>
+
+  <section id="plans" class="wrap">
+    <p class="eyebrow">Plans</p>
+    <h2>Pick how often. The list stays the same.</h2>
+    <p class="sub">Kitchen, baths, dust, floors, trash, and beds made. Oven, fridge, cabinets, and laundry stay optional so a normal visit stays on time.</p>
+    <div class="plan-grid">
+      <article class="card">
+        <img src="images/kitchen.jpg" alt="Clean kitchen" />
+        <div>
+          <h3>Weekly</h3>
+          <p>Kids, pets, heavy traffic. Shortest visit, lowest price.</p>
+        </div>
+      </article>
+      <article class="card featured">
+        <img src="images/living.jpg" alt="Living room" />
+        <div>
+          <p class="pill">Most homes</p>
+          <h3>Every 2 weeks</h3>
+          <p>The local sweet spot. A 3-bed is $165 and about 3.5 hours.</p>
+        </div>
+      </article>
+      <article class="card">
+        <img src="images/bed.jpg" alt="Made bed" />
+        <div>
+          <h3>Deep & move-out</h3>
+          <p>First visit, or empty house. One home that day. Oven and fridge still extra.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section id="pricing" class="wrap">
+    <p class="eyebrow">Pricing</p>
+    <h2>What you pay. Hours are how long she is there.</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Home</th>
+            <th>Weekly</th>
+            <th>Every 2 weeks</th>
+            <th>Monthly</th>
+            <th>One-time</th>
+            <th>Deep</th>
+            <th>Move in / out</th>
+          </tr>
+        </thead>
+        <tbody id="priceBody"></tbody>
+      </table>
+    </div>
+    <p class="fine">Extra bathroom +$15. Over 3,600 sq ft, quote it. Prices before any sales tax. A neglected oven is quoted, not the $25 tag.</p>
+  </section>
+
+  <section id="addons" class="wrap split">
+    <div>
+      <p class="eyebrow">Add-ons</p>
+      <h2>Only if you tick them.</h2>
+      <div class="addon-list" id="addonList"></div>
+    </div>
+    <figure class="stack">
+      <img src="images/bath.jpg" alt="Clean bathroom" />
+      <img src="images/bed.jpg" alt="Fresh linen" />
+    </figure>
+  </section>
+
+  <section id="quote" class="wrap quote-shell">
+    <div>
+      <p class="eyebrow">Quote</p>
+      <h2>Price it before you ask.</h2>
+      <p class="sub">This holds the request on this browser. Login, calendar, and live booking come later — nothing is charged.</p>
+      <form id="quoteForm" class="panel">
+        <label>Home
+          <select id="home"></select>
+        </label>
+        <label>Plan
+          <select id="plan"></select>
+        </label>
+        <div class="row">
+          <span>Extra bathrooms</span>
+          <span class="stepper"><button type="button" id="bathMinus">−</button><b id="baths">0</b><button type="button" id="bathPlus">+</button></span>
+        </div>
+        <label class="check"><input type="checkbox" id="ownProducts" /> I’ll leave my own products out (−$8)</label>
+        <div class="checks" id="addonChecks"></div>
+        <div class="two">
+          <label>Name<input id="name" required placeholder="Your name" /></label>
+          <label>Phone<input id="phone" required placeholder="(281) 555-0148" /></label>
+        </div>
+        <label>Address<input id="address" required placeholder="Street, Cinco Ranch or Sugar Land" /></label>
+        <label>Preferred day<input id="day" type="date" /></label>
+        <label>Notes<textarea id="notes" rows="3" placeholder="Pets, gate code, sheets in the closet"></textarea></label>
+        <button class="btn terra" type="submit">Request this visit</button>
+      </form>
+    </div>
+    <aside class="panel quote" id="summary"></aside>
+  </section>
+
+  <section class="wrap included">
+    <div>
+      <p class="eyebrow">Every visit</p>
+      <h2>The list she actually does.</h2>
+      <ul>
+        <li>Kitchen counters, sink, and stovetop</li>
+        <li>Bathrooms sanitized, mirrors wiped</li>
+        <li>Dust, vacuum, and mop hard floors</li>
+        <li>Trash out, beds made</li>
+        <li>Her products, unless you leave yours out</li>
+      </ul>
+    </div>
+    <img src="images/kitchen.jpg" alt="Kitchen after a visit" />
+  </section>
+</main>
+
+<footer class="wrap">
+  <span>Mommy America · temporary site. Calendar and accounts come next.</span>
+  <span>Cinco Ranch · Katy · Richmond · Sugar Land</span>
+</footer>
+<div class="modal" id="modal"><div class="sheet"><p class="eyebrow">Request saved</p><h3>You’re on the list.</h3><p id="confirm"></p><button class="btn terra" id="close">Done</button></div></div>
+<script src="app.js"></script>
+</body>
+</html>
