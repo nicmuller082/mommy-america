@@ -51,6 +51,10 @@ function total() {
   const kind = selectedKind();
   let price = priceFor(home, kind, freq) + state.baths * 20;
   const lines = [];
+  if (document.getElementById("ownSupplies").checked) {
+    price += 10;
+    lines.push({ name: "Her supplies", cost: 10 });
+  }
   addons.forEach(a => {
     if (!state.addons[a.id]) return;
     if ((a.id === "baseboards" || a.id === "fans") && kind !== "standard") return;
@@ -86,7 +90,7 @@ function renderQuote() {
     <div class="line"><span>Extra bathrooms</span><span>${state.baths ? state.baths + " · " + money(state.baths * 20) : "—"}</span></div>
     ${q.lines.map(l => `<div class="line"><span>${l.name}</span><span>${money(l.cost)}</span></div>`).join("")}
     <div class="line total"><span>Estimated total</span><span>${money(q.price)}</span></div>
-    <p class="fine">Travel outside the zone, and a fee if she brings supplies, are not priced on the sheet yet. Call 346-833-5797.</p>`;
+    <p class="fine">Travel outside Katy, Richmond, and Sugar Land is quoted per request. Supplies are $10 if she brings them.</p>`;
   document.getElementById("bathNote").textContent = `${q.home.baths} bathroom${q.home.baths > 1 ? "s" : ""} included. Each extra bathroom is $20.`;
 }
 
