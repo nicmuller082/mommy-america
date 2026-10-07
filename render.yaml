@@ -1,7 +1,17 @@
-staticSites:
-  - name: mommy-america
+services:
+  - type: web
+    name: mommy-america
+    runtime: python
     repo: https://github.com/nicmuller082/mommy-america
     branch: main
-    buildCommand: ""
-    publishPath: .
-    autoDeploy: true
+    buildCommand: pip install -r requirements.txt
+    startCommand: python server.py
+    envVars:
+      - key: ICLOUD_APPLE_ID
+        sync: false
+      - key: ICLOUD_APP_PASSWORD
+        sync: false
+      - key: ICLOUD_FAMILY_APPLE_ID
+        sync: false
+      - key: ICLOUD_FAMILY_APP_PASSWORD
+        sync: false

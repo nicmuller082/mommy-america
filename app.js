@@ -59,8 +59,24 @@ function fmt(mins) {
   return `${h}:${String(m).padStart(2, "0")}`;
 }
 function bookings() { return JSON.parse(localStorage.getItem("mommy-bookings") || "[]"); }
+let appleBusy = [];
 function taken(date, start, end) {
-  return bookings().some(b => b.date === date && start < b.end && end > b.start);
+  const local = bookings().some(b => b.date === date && start < b.end && end > b.start);
+  const apple = appleBusy.some(b => start < b.end && end > b.start);
+  return local || apple;
+}
+async function loadApple(date) {
+  appleBusy = [];
+  if (!date) return;
+  try {
+    const response = await fetch("/api/busy?date=" + date);
+    const data = await response.json();
+    appleBusy = data.busy || [];
+    const note = document.getElementById("timeNote");
+    if (!data.connected && note) note.textContent = data.error || "Apple Calendar is not connected yet.";
+  } catch (err) {
+    appleBusy = [];
+  }
 }
 
 function selectedHome() { return homes.find(h => h.id === document.getElementById("home").value) || homes[3]; }
@@ -153,7 +169,7 @@ function renderQuote() {
     ${q.lines.map(l => `<div class="line"><span>${l.name}</span><span>${money(l.cost)}</span></div>`).join("")}
     <div class="line total"><span>Estimated total</span><span>${money(q.price)}</span></div>
     <div class="line"><span>On site</span><span>${fmt(q.minutes)} · leave by ${fmt(q.leaveBy)}</span></div>
-    <p class="fine">${q.zoneNote} A booking file downloads for Apple Calendar. An existing event on this phone blocks the slot. Her other Apple events need the iCloud link before they can block the page.</p>`;
+    <p class="fine">${q.zoneNote} A personal or family Apple event on that day removes the overlapping start. The booking is written back to her personal calendar once iCloud is connected.</p>`;
   document.getElementById("bathNote").textContent = `${q.home.baths} bathroom${q.home.baths > 1 ? "s" : ""} included. Each extra bathroom is $20.`;
 }
 
@@ -164,14 +180,17 @@ function init() {
   renderTables();
   renderAddons();
   renderQuote();
-  document.querySelectorAll("#quoteForm select, #quoteForm input").forEach(el => el.addEventListener("change", renderQuote));
+  document.getElementById("day").addEventListener("change", async () => { await loadApple(document.getElementById("day").value); renderQuote(); });
+  document.querySelectorAll("#quoteForm select, #quoteForm input").forEach(el => {
+    if (el.id !== "day") el.addEventListener("change", renderQuote);
+  });
   document.getElementById("addonChecks").addEventListener("change", e => {
     if (e.target.dataset.addon) state.addons[e.target.dataset.addon] = e.target.checked;
     renderQuote();
   });
   document.getElementById("bathPlus").onclick = () => { state.baths = Math.min(4, state.baths + 1); document.getElementById("baths").textContent = state.baths; renderQuote(); };
   document.getElementById("bathMinus").onclick = () => { state.baths = Math.max(0, state.baths - 1); document.getElementById("baths").textContent = state.baths; renderQuote(); };
-  document.getElementById("quoteForm").onsubmit = e => {
+  document.getElementById("quoteForm").onsubmit = async e => {
     e.preventDefault();
     const q = quote();
     const start = Number(document.getElementById("start").value);
@@ -191,12 +210,20 @@ function init() {
     const all = bookings();
     all.push(booking);
     localStorage.setItem("mommy-bookings", JSON.stringify(all));
+    let apple = "Download started for Apple Calendar.";
+    try {
+      const response = await fetch("/api/book", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(booking) });
+      const data = await response.json();
+      apple = data.saved ? "Added to her personal Apple Calendar." : data.error;
+    } catch (err) {
+      apple = "Apple write is not available until the server is connected.";
+    }
     const file = new Blob([ics(booking)], { type: "text/calendar" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(file);
     link.download = "mommy-america-booking.ics";
     link.click();
-    document.getElementById("confirm").textContent = `${booking.name}, ${booking.kind} at ${booking.address} on ${booking.date}, ${fmt(booking.start)} to ${fmt(booking.end)}. Open the downloaded file to add it to Apple Calendar.`;
+    document.getElementById("confirm").textContent = `${booking.name}, ${booking.kind} at ${booking.address} on ${booking.date}, ${fmt(booking.start)} to ${fmt(booking.end)}. ${apple}`;
     document.getElementById("modal").classList.add("on");
   };
   document.getElementById("close").onclick = () => document.getElementById("modal").classList.remove("on");
