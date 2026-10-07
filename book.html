@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Book — Mommy America Cleaning</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560&family=Outfit:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="topbar"><div class="wrap"><span>Monday–Friday, 8:00–2:30</span><a href="tel:+13468335791">346-833-5791</a></div></div>
+<header class="nav"><div class="wrap nav-inner"><a class="brand" href="index.html">Mommy <span>America</span></a><nav class="links"><a href="index.html">Home</a><a href="services.html">Services</a><a class="active" href="book.html">Booking</a><a href="contact.html">Contact</a></nav><a class="btn" href="tel:+13468335791">346-833-5791</a></div></header>
+<main class="wrap">
+  <section>
+    <p class="kicker">BOOKING</p>
+    <h1>Reserve a weekday.</h1>
+    <p class="lede">Starts are offered only when the visit can finish and she can leave in time for the 3:00 school bus. An Apple Calendar event on that day removes the overlap.</p>
+  </section>
+  <section class="split">
+    <form id="quoteForm" class="panel">
+      <div class="two"><label>Home<select id="home"></select></label><label>Service<select id="kind"></select></label></div>
+      <label>How often<select id="freq"></select></label>
+      <div class="row"><span>Extra bathrooms <span class="fine" id="bathNote"></span></span><span class="stepper"><button type="button" id="bathMinus">−</button> <b id="baths">0</b> <button type="button" id="bathPlus">+</button></span></div>
+      <label class="check"><input type="checkbox" id="ownSupplies" /> She brings the supplies (+$10)</label>
+      <div class="checks" id="addonChecks"></div>
+      <div class="two"><label>Name<input id="name" required placeholder="Your name" /></label><label>Phone<input id="phone" required placeholder="346-833-5791" /></label></div>
+      <label>Address<input id="address" required placeholder="Street, Katy or Richmond" /></label>
+      <label>Area<select id="zone"><option value="cinco">Cinco Ranch</option><option value="richmond">Richmond</option><option value="katywest">West Katy / 77494</option><option value="sugarwest">Sugar Land west of 99</option><option value="sugareast">Sugar Land east / First Colony</option><option value="houston">Houston</option></select></label>
+      <div class="two"><label>Day<input id="day" type="date" /></label><label>Start<select id="start"></select></label></div>
+      <p class="fine" id="timeNote"></p>
+      <label>Notes<textarea id="notes" rows="3" placeholder="Pets, gate code, sheets in the closet"></textarea></label>
+      <button class="btn" type="submit">Book this visit</button>
+    </form>
+    <aside class="panel quote" id="summary"></aside>
+  </section>
+</main>
+<footer><div class="wrap footer-grid"><div><strong>Mommy America Cleaning</strong></div><a href="tel:+13468335791">346-833-5791</a><span>Katy · Richmond · Sugar Land</span></div></footer>
+<div class="modal" id="modal"><div class="sheet"><h2>Booked</h2><p id="confirm"></p><button class="btn" id="close">Done</button></div></div>
+<script src="app.js"></script>
+</body>
+</html>

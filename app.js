@@ -149,8 +149,10 @@ function renderTables() {
   document.getElementById("deepBody").innerHTML = homes.map(h => `<tr><td>${h.name}</td>${freqs.map(f => `<td>${money(h.deep[f.id])}</td>`).join("")}</tr>`).join("");
 }
 function renderAddons() {
-  document.getElementById("addonList").innerHTML = addons.map(a => `<div class="addon"><span><b>${a.name}</b><br><span class="fine">${a.note}</span></span><b>${money(a.price)}</b></div>`).join("");
-  document.getElementById("addonChecks").innerHTML = addons.map(a => `<label class="check"><span>${a.name}</span><span><input type="checkbox" data-addon="${a.id}" /> ${money(a.price)}</span></label>`).join("");
+  const list = document.getElementById("addonList");
+  if (list) list.innerHTML = addons.map(a => `<div class="addon"><span><b>${a.name}</b><br><span class="fine">${a.note}</span></span><b>${money(a.price)}</b></div>`).join("");
+  const checks = document.getElementById("addonChecks");
+  if (checks) checks.innerHTML = addons.map(a => `<label class="check"><span>${a.name}</span><span><input type="checkbox" data-addon="${a.id}" /> ${money(a.price)}</span></label>`).join("");
 }
 function renderQuote() {
   const q = quote();
@@ -174,11 +176,12 @@ function renderQuote() {
 }
 
 function init() {
+  if (document.getElementById("standardBody")) renderTables();
+  if (document.getElementById("addonList")) renderAddons();
+  if (!document.getElementById("quoteForm")) return;
   document.getElementById("home").innerHTML = homes.map(h => `<option value="${h.id}" ${h.id === "32" ? "selected" : ""}>${h.name}</option>`).join("");
   document.getElementById("kind").innerHTML = kinds.map(k => `<option value="${k.id}">${k.name}</option>`).join("");
   document.getElementById("freq").innerHTML = freqs.map(f => `<option value="${f.id}" ${f.id === "biweekly" ? "selected" : ""}>${f.name}</option>`).join("");
-  renderTables();
-  renderAddons();
   renderQuote();
   document.getElementById("day").addEventListener("change", async () => { await loadApple(document.getElementById("day").value); renderQuote(); });
   document.querySelectorAll("#quoteForm select, #quoteForm input").forEach(el => {
