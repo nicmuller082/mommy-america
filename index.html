@@ -43,14 +43,14 @@
         <a class="btn pink" href="#quote">Build a quote</a>
         <a class="btn ghost" href="#pricing">See prices</a>
       </div>
-      <p class="fine">Every 2 weeks, 3 bedrooms, 2 bathrooms included, from $165.</p>
+      <p class="fine">Every 2 weeks, 3 bedrooms and 2 bathrooms, from $130. Call 346-833-5797.</p>
     </div>
   </section>
 
   <section class="wrap stats">
-    <div><b>$165</b><span>3 bedrooms, every 2 weeks</span></div>
-    <div><b>2 bathrooms</b><span>Included on a 3-bedroom home</span></div>
-    <div><b>$8 off</b><span>If you leave your products out</span></div>
+    <div><b>$130</b><span>3 bedrooms, 2 bathrooms, every 2 weeks</span></div>
+    <div><b>$20</b><span>Each extra bathroom</span></div>
+    <div><b>346-833-5797</b><span>Call or text to book</span></div>
     <div><b>Local</b><span>Katy · Richmond · Sugar Land</span></div>
   </section>
 
@@ -68,28 +68,31 @@
 
   <section id="plans" class="wrap">
     <h2>What she offers</h2>
-    <p class="sub">Regular visits keep the house steady. Deep and move-in are a reset. Beds are made. Oven and fridge stay optional.</p>
+    <p class="sub">Houses and apartments. Standard keeps it steady. Deep, move-in, and Airbnb are a reset. A travel fee applies outside the zone.</p>
     <div class="plan-grid">
-      <article class="card"><div class="icon">⌂</div><h3>REGULAR CLEANING</h3><p>Weekly or every 2 weeks. Kitchen, bathrooms, dust, and floors.</p></article>
-      <article class="card"><div class="icon">✦</div><h3>DEEP CLEANING</h3><p>Baseboards, doors, fans, and the buildup a regular visit skips.</p></article>
-      <article class="card"><div class="icon">▢</div><h3>MOVE-IN / MOVE-OUT</h3><p>Empty-home reset so you can hand over the keys.</p></article>
-      <article class="card"><div class="icon">♥</div><h3>RELIABLE & AFFORDABLE</h3><p>Flat rate, slightly under the local company price.</p></article>
+      <article class="card"><div class="icon">⌂</div><h3>STANDARD CLEANING</h3><p>Kitchen, bathrooms, dust, vacuum, mop, trash, mirrors, and the stove top.</p></article>
+      <article class="card"><div class="icon">✦</div><h3>DEEP CLEANING</h3><p>Standard, plus baseboards, sills, blinds, cabinet fronts, fans, and buildup.</p></article>
+      <article class="card"><div class="icon">▢</div><h3>MOVE-IN / MOVE-OUT</h3><p>Empty-home reset. Priced from the deep card unless she quotes it.</p></article>
+      <article class="card"><div class="icon">♥</div><h3>AIRBNB / SHORT STAY</h3><p>Turnovers for short rentals. Priced from the deep card unless she quotes it.</p></article>
     </div>
   </section>
 
   <section id="pricing" class="wrap">
-    <h2>Simple prices</h2>
+    <h2>Standard cleaning</h2>
     <div class="table-wrap">
       <table>
-        <thead>
-          <tr>
-            <th>Home</th><th>Weekly</th><th>Every 2 weeks</th><th>Monthly</th><th>One-time</th><th>Deep</th><th>Move in / out</th>
-          </tr>
-        </thead>
-        <tbody id="priceBody"></tbody>
+        <thead id="standardHead"></thead>
+        <tbody id="standardBody"></tbody>
       </table>
     </div>
-    <p class="fine">Bathrooms in the price: a 1-bedroom includes 1 bathroom, a 2-bedroom includes 2 bathrooms, a 3-bedroom includes 2 bathrooms, and a 4- or 5-bedroom includes 3 bathrooms. Each extra bathroom is $15.</p>
+    <h2 style="margin-top:28px">Deep cleaning</h2>
+    <div class="table-wrap">
+      <table>
+        <thead id="deepHead"></thead>
+        <tbody id="deepBody"></tbody>
+      </table>
+    </div>
+    <p class="fine">Move-in, move-out, and Airbnb use the deep card unless she quotes the house. Travel outside the zone, and a fee if she brings her own supplies, were left blank on the sheet. Extra bathroom is $20. Bed making is on request.</p>
   </section>
 
   <section id="addons" class="wrap split">
@@ -106,16 +109,16 @@
       <p class="sub">The request stays on this phone for now. The calendar comes later. Nothing is charged.</p>
       <form id="quoteForm" class="panel">
         <label>Home<select id="home"></select></label>
-        <label>Plan<select id="plan"></select></label>
+        <label>Service<select id="kind"></select></label>
+        <label>How often<select id="freq"></select></label>
         <div class="row">
           <span>Extra bathrooms <span class="fine" id="bathNote">2 bathrooms included.</span></span>
           <span class="stepper"><button type="button" id="bathMinus">−</button><b id="baths">0</b><button type="button" id="bathPlus">+</button></span>
         </div>
-        <label class="check"><input type="checkbox" id="ownProducts" /> I’ll leave my own products out (−$8)</label>
         <div class="checks" id="addonChecks"></div>
         <div class="two">
           <label>Name<input id="name" required placeholder="Your name" /></label>
-          <label>Phone<input id="phone" required placeholder="(281) 555-0148" /></label>
+          <label>Phone<input id="phone" required placeholder="346-833-5797" /></label>
         </div>
         <label>Address<input id="address" required placeholder="Street, Katy or Richmond" /></label>
         <label>Preferred day<input id="day" type="date" /></label>
@@ -126,11 +129,35 @@
     <aside class="panel quote" id="summary"></aside>
   </section>
 
-  <p class="wrap banner">Clean homes. Happier days.</p>
+  <section class="wrap split">
+    <div>
+      <h2>Every standard visit</h2>
+      <ul>
+        <li>Kitchen wipe-down and sanitizing</li>
+        <li>Outside of appliances and the stove top</li>
+        <li>Bathrooms and showers</li>
+        <li>Dusting, mirrors, and surfaces</li>
+        <li>Vacuum, mop or sweep, trash out</li>
+        <li>Beds made on request</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Added on a deep clean</h2>
+      <ul>
+        <li>Baseboards, door frames, light switches</li>
+        <li>Window sills and blinds</li>
+        <li>Cabinet fronts and ceiling fans</li>
+        <li>Detail bathroom scrub and buildup</li>
+        <li>Behind and under reachable furniture</li>
+        <li>More detailed dusting</li>
+      </ul>
+    </div>
+  </section>
 </main>
+  <p class="wrap banner">Clean homes. Happier days.</p>
 <footer class="wrap">
-  <span>Mommy America Cleaning · Serving Katy, Richmond, Sugar Land & Houston</span>
-  <span>Starting small. Heart in every home.</span>
+  <span>Mommy America Cleaning · 346-833-5797</span>
+  <span>Katy · Richmond · Sugar Land · Houston</span>
 </footer>
 <div class="modal" id="modal"><div class="sheet"><p class="script">You’re on the list.</p><p id="confirm"></p><button class="btn pink" id="close">Done</button></div></div>
 <script src="app.js"></script>
