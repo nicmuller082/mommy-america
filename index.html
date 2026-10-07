@@ -122,9 +122,21 @@
           <label>Phone<input id="phone" required placeholder="346-833-5797" /></label>
         </div>
         <label>Address<input id="address" required placeholder="Street, Katy or Richmond" /></label>
-        <label>Preferred day<input id="day" type="date" /></label>
+        <label>Area
+          <select id="zone">
+            <option value="cinco">Cinco Ranch · about 15 min home</option>
+            <option value="richmond">Richmond · about 15 min home</option>
+            <option value="katywest">West Katy / 77494 · about 20 min home</option>
+            <option value="sugarwest">Sugar Land west of 99 · about 25 min home</option>
+            <option value="sugareast">Sugar Land east / First Colony · about 35 min home</option>
+            <option value="houston">Houston · too far for the 3:00 bus</option>
+          </select>
+        </label>
+        <label>Day<input id="day" type="date" /></label>
+        <label>Start<select id="start"></select></label>
+        <p class="fine" id="timeNote"></p>
         <label>Notes<textarea id="notes" rows="3" placeholder="Pets, gate code, sheets in the closet"></textarea></label>
-        <button class="btn pink" type="submit">Request this visit</button>
+        <button class="btn pink" type="submit">Book this visit</button>
       </form>
     </div>
     <aside class="panel quote" id="summary"></aside>

@@ -1,10 +1,10 @@
 const homes = [
-  { id: "11", name: "1 bedroom, 1 bathroom", beds: 1, baths: 1, standard: { weekly: 60, biweekly: 70, monthly: 85 }, deep: { weekly: 100, biweekly: 110, monthly: 120 } },
-  { id: "21", name: "2 bedrooms, 1 bathroom", beds: 2, baths: 1, standard: { weekly: 80, biweekly: 90, monthly: 100 }, deep: { weekly: 130, biweekly: 140, monthly: 150 } },
-  { id: "22", name: "2 bedrooms, 2 bathrooms", beds: 2, baths: 2, standard: { weekly: 90, biweekly: 100, monthly: 110 }, deep: { weekly: 150, biweekly: 160, monthly: 180 } },
-  { id: "32", name: "3 bedrooms, 2 bathrooms", beds: 3, baths: 2, standard: { weekly: 120, biweekly: 130, monthly: 140 }, deep: { weekly: 180, biweekly: 190, monthly: 210 } },
-  { id: "42", name: "4 bedrooms, 2 bathrooms", beds: 4, baths: 2, standard: { weekly: 150, biweekly: 160, monthly: 170 }, deep: { weekly: 230, biweekly: 250, monthly: 270 } },
-  { id: "43", name: "4 bedrooms, 3 bathrooms", beds: 4, baths: 3, standard: { weekly: 190, biweekly: 200, monthly: 210 }, deep: { weekly: 300, biweekly: 330, monthly: 360 } }
+  { id: "11", name: "1 bedroom, 1 bathroom", beds: 1, baths: 1, standard: { weekly: 60, biweekly: 70, monthly: 85 }, deep: { weekly: 100, biweekly: 110, monthly: 120 }, hours: { standard: 1.5, deep: 2.5 } },
+  { id: "21", name: "2 bedrooms, 1 bathroom", beds: 2, baths: 1, standard: { weekly: 80, biweekly: 90, monthly: 100 }, deep: { weekly: 130, biweekly: 140, monthly: 150 }, hours: { standard: 2, deep: 3.25 } },
+  { id: "22", name: "2 bedrooms, 2 bathrooms", beds: 2, baths: 2, standard: { weekly: 90, biweekly: 100, monthly: 110 }, deep: { weekly: 150, biweekly: 160, monthly: 180 }, hours: { standard: 2.25, deep: 3.75 } },
+  { id: "32", name: "3 bedrooms, 2 bathrooms", beds: 3, baths: 2, standard: { weekly: 120, biweekly: 130, monthly: 140 }, deep: { weekly: 180, biweekly: 190, monthly: 210 }, hours: { standard: 3, deep: 4.5 } },
+  { id: "42", name: "4 bedrooms, 2 bathrooms", beds: 4, baths: 2, standard: { weekly: 150, biweekly: 160, monthly: 170 }, deep: { weekly: 230, biweekly: 250, monthly: 270 }, hours: { standard: 3.75, deep: 5.5 } },
+  { id: "43", name: "4 bedrooms, 3 bathrooms", beds: 4, baths: 3, standard: { weekly: 190, biweekly: 200, monthly: 210 }, deep: { weekly: 300, biweekly: 330, monthly: 360 }, hours: { standard: 4.25, deep: 6.25 } }
 ];
 const freqs = [
   { id: "weekly", name: "Weekly" },
@@ -33,8 +33,35 @@ const addons = [
   { id: "cabinets", name: "Inside cabinets", price: 25, note: "You empty them first." },
   { id: "microwave", name: "Microwave", price: 8, note: "Interior wipe." }
 ];
+const addonMinutes = { oven: 30, fridge: 30, windows: 15, sliding: 20, pethair: 30, laundry: 20, linen: 10, dishes: 15, dishesHeavy: 25, baseboards: 30, declutter: 60, fans: 10, cabinets: 30, microwave: 10 };
+const zones = {
+  cinco: { name: "Cinco Ranch", drive: 15, ok: true },
+  richmond: { name: "Richmond", drive: 15, ok: true },
+  katywest: { name: "West Katy", drive: 20, ok: true },
+  sugarwest: { name: "Sugar Land west of 99", drive: 25, ok: true },
+  sugareast: { name: "Sugar Land east", drive: 35, ok: false },
+  houston: { name: "Houston", drive: 50, ok: false }
+};
+const DAY_START = 8 * 60;
+const HARD_LEAVE = 14 * 60 + 30;
+const BUS = 15 * 60;
 const money = n => "$" + Math.round(n);
 const state = { baths: 0, addons: {} };
+
+function durationMinutes(home, kind) {
+  const base = (kind === "standard" ? home.hours.standard : home.hours.deep) * 60;
+  const extra = state.baths * 25 + addons.reduce((sum, a) => sum + (state.addons[a.id] && !((a.id === "baseboards" || a.id === "fans") && kind !== "standard") ? addonMinutes[a.id] : 0), 0);
+  return Math.round(base + extra);
+}
+function latestLeave(zone) { return Math.min(HARD_LEAVE, BUS - zone.drive - 5); }
+function fmt(mins) {
+  const h = Math.floor(mins / 60), m = mins % 60;
+  return `${h}:${String(m).padStart(2, "0")}`;
+}
+function bookings() { return JSON.parse(localStorage.getItem("mommy-bookings") || "[]"); }
+function taken(date, start, end) {
+  return bookings().some(b => b.date === date && start < b.end && end > b.start);
+}
 
 function selectedHome() { return homes.find(h => h.id === document.getElementById("home").value) || homes[3]; }
 function selectedFreq() { return document.getElementById("freq").value || "biweekly"; }
@@ -45,10 +72,11 @@ function priceFor(home, kind, freq) {
   return card[freq];
 }
 
-function total() {
+function quote() {
   const home = selectedHome();
   const freq = selectedFreq();
   const kind = selectedKind();
+  const zone = zones[document.getElementById("zone").value] || zones.cinco;
   let price = priceFor(home, kind, freq) + state.baths * 20;
   const lines = [];
   if (document.getElementById("ownSupplies").checked) {
@@ -61,7 +89,40 @@ function total() {
     price += a.price;
     lines.push({ name: a.name, cost: a.price });
   });
-  return { home, freq, kind, price, lines };
+  const minutes = durationMinutes(home, kind);
+  const leaveBy = latestLeave(zone);
+  const zoneNote = zone.ok
+    ? `${zone.name} is about ${zone.drive} minutes home, so she can leave by ${fmt(leaveBy)} and make the 3:00 bus.`
+    : `${zone.name} is about ${zone.drive} minutes home. She cannot finish at 2:30 and make the 3:00 bus. Book only if she leaves by ${fmt(leaveBy)}.`;
+  return { home, freq, kind, price, lines, minutes, leaveBy, zone, zoneNote };
+}
+function fillStarts(q) {
+  const date = document.getElementById("day").value;
+  const select = document.getElementById("start");
+  const previous = select.value;
+  const weekday = date ? new Date(date + "T12:00:00").getDay() : 1;
+  if (date && (weekday === 0 || weekday === 6)) {
+    select.innerHTML = `<option value="">Monday to Friday only</option>`;
+    document.getElementById("timeNote").textContent = "She does not book Saturday or Sunday.";
+    return;
+  }
+  const options = [];
+  for (let start = DAY_START; start + q.minutes <= q.leaveBy; start += 30) {
+    const end = start + q.minutes;
+    if (date && taken(date, start, end)) continue;
+    options.push(`<option value="${start}">${fmt(start)} – ${fmt(end)}</option>`);
+  }
+  select.innerHTML = options.length ? options.join("") : `<option value="">No start fits before ${fmt(q.leaveBy)}</option>`;
+  if (previous && [...select.options].some(o => o.value === previous)) select.value = previous;
+  document.getElementById("timeNote").textContent = options.length
+    ? `This visit is ${fmt(q.minutes).replace(":", "h ")}m. She is on site from 8:00 and must leave by ${fmt(q.leaveBy)}.`
+    : `This visit is too long to finish and still reach the bus. Drop an add-on or pick a smaller clean.`;
+}
+function ics(booking) {
+  const stamp = booking.date.replace(/-/g, "");
+  const start = stamp + "T" + fmt(booking.start).replace(":", "") + "00";
+  const end = stamp + "T" + fmt(booking.end).replace(":", "") + "00";
+  return `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Mommy America//Booking//EN\nBEGIN:VEVENT\nDTSTART:${start}\nDTEND:${end}\nSUMMARY:Mommy America · ${booking.home}\nLOCATION:${booking.address}\nDESCRIPTION:${booking.kind}. ${booking.notes || ""}\nEND:VEVENT\nEND:VCALENDAR`;
 }
 
 function renderTables() {
@@ -76,10 +137,11 @@ function renderAddons() {
   document.getElementById("addonChecks").innerHTML = addons.map(a => `<label class="check"><span>${a.name}</span><span><input type="checkbox" data-addon="${a.id}" /> ${money(a.price)}</span></label>`).join("");
 }
 function renderQuote() {
-  const q = total();
+  const q = quote();
   const kindName = kinds.find(k => k.id === q.kind).name;
   const freqName = freqs.find(f => f.id === q.freq).name;
   const pricedAs = q.kind === "standard" ? "" : `<div class="line"><span>Priced from the deep card</span><span></span></div>`;
+  fillStarts(q);
   document.getElementById("summary").innerHTML = `
     <p class="script" style="font-size:28px;margin:0">Your visit</p>
     <h3>${money(q.price)}</h3>
@@ -90,7 +152,8 @@ function renderQuote() {
     <div class="line"><span>Extra bathrooms</span><span>${state.baths ? state.baths + " · " + money(state.baths * 20) : "—"}</span></div>
     ${q.lines.map(l => `<div class="line"><span>${l.name}</span><span>${money(l.cost)}</span></div>`).join("")}
     <div class="line total"><span>Estimated total</span><span>${money(q.price)}</span></div>
-    <p class="fine">Travel outside Katy, Richmond, and Sugar Land is quoted per request. Supplies are $10 if she brings them.</p>`;
+    <div class="line"><span>On site</span><span>${fmt(q.minutes)} · leave by ${fmt(q.leaveBy)}</span></div>
+    <p class="fine">${q.zoneNote} A booking file downloads for Apple Calendar. An existing event on this phone blocks the slot. Her other Apple events need the iCloud link before they can block the page.</p>`;
   document.getElementById("bathNote").textContent = `${q.home.baths} bathroom${q.home.baths > 1 ? "s" : ""} included. Each extra bathroom is $20.`;
 }
 
@@ -110,23 +173,30 @@ function init() {
   document.getElementById("bathMinus").onclick = () => { state.baths = Math.max(0, state.baths - 1); document.getElementById("baths").textContent = state.baths; renderQuote(); };
   document.getElementById("quoteForm").onsubmit = e => {
     e.preventDefault();
-    const q = total();
-    const request = {
+    const q = quote();
+    const start = Number(document.getElementById("start").value);
+    if (!document.getElementById("day").value || !start) return alert("Pick a weekday and a start time that ends before she has to leave.");
+    const booking = {
       name: document.getElementById("name").value,
       phone: document.getElementById("phone").value,
       address: document.getElementById("address").value,
-      day: document.getElementById("day").value,
+      date: document.getElementById("day").value,
+      start,
+      end: start + q.minutes,
       notes: document.getElementById("notes").value,
       home: q.home.name,
       kind: kinds.find(k => k.id === q.kind).name,
-      freq: freqs.find(f => f.id === q.freq).name,
-      total: q.price,
-      savedAt: new Date().toISOString()
+      total: q.price
     };
-    const all = JSON.parse(localStorage.getItem("mommy-requests") || "[]");
-    all.push(request);
-    localStorage.setItem("mommy-requests", JSON.stringify(all));
-    document.getElementById("confirm").textContent = `${request.name}, ${request.kind} (${request.freq}) for ${request.home} at ${money(request.total)}. Preferred day ${request.day || "flexible"}. Call 346-833-5797 to confirm.`;
+    const all = bookings();
+    all.push(booking);
+    localStorage.setItem("mommy-bookings", JSON.stringify(all));
+    const file = new Blob([ics(booking)], { type: "text/calendar" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(file);
+    link.download = "mommy-america-booking.ics";
+    link.click();
+    document.getElementById("confirm").textContent = `${booking.name}, ${booking.kind} at ${booking.address} on ${booking.date}, ${fmt(booking.start)} to ${fmt(booking.end)}. Open the downloaded file to add it to Apple Calendar.`;
     document.getElementById("modal").classList.add("on");
   };
   document.getElementById("close").onclick = () => document.getElementById("modal").classList.remove("on");
