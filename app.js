@@ -35,12 +35,11 @@ const addons = [
 ];
 const addonMinutes = { oven: 30, fridge: 30, windows: 15, sliding: 20, pethair: 30, laundry: 20, linen: 10, dishes: 15, dishesHeavy: 25, baseboards: 30, declutter: 60, fans: 10, cabinets: 30, microwave: 10 };
 const zones = {
-  cinco: { name: "Cinco Ranch", drive: 15, ok: true },
-  richmond: { name: "Richmond", drive: 15, ok: true },
-  katywest: { name: "West Katy", drive: 20, ok: true },
-  sugarwest: { name: "Sugar Land west of 99", drive: 25, ok: true },
-  sugareast: { name: "Sugar Land east", drive: 35, ok: false },
-  houston: { name: "Houston", drive: 50, ok: false }
+  cinco: { name: "Nearby Cinco Ranch", drive: 12, ok: true },
+  seven: { name: "Seven Meadows", drive: 12, ok: true },
+  grand: { name: "Grand Lakes", drive: 15, ok: true },
+  lakemont: { name: "Lakemont", drive: 12, ok: true },
+  outside: { name: "Outside the 4-mile area", drive: 25, ok: false }
 };
 const DAY_START = 8 * 60;
 const HARD_LEAVE = 14 * 60 + 30;
@@ -108,8 +107,8 @@ function quote() {
   const minutes = durationMinutes(home, kind);
   const leaveBy = latestLeave(zone);
   const zoneNote = zone.ok
-    ? `${zone.name} is about ${zone.drive} minutes home, so she can leave by ${fmt(leaveBy)} and make the 3:00 bus.`
-    : `${zone.name} is about ${zone.drive} minutes home. She cannot finish at 2:30 and make the 3:00 bus. Book only if she leaves by ${fmt(leaveBy)}.`;
+    ? `${zone.name} is inside the local area if the drive is within 4 miles. About ${zone.drive} minutes home.`
+    : "Outside the 4-mile area. Travel is quoted per request so the round trip stays honest.";
   return { home, freq, kind, price, lines, minutes, leaveBy, zone, zoneNote };
 }
 function fillStarts(q) {
