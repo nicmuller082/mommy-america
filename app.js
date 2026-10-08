@@ -20,7 +20,7 @@ const kinds = [
 const addons = [
   { id: "oven", name: "Inside oven", price: 30, note: "Interior only." },
   { id: "fridge", name: "Inside fridge or freezer", price: 20, note: "One appliance." },
-  { id: "windows", name: "Interior window", price: 15, note: "Per frame." },
+  { id: "windows", name: "Interior window", price: 5, note: "Per frame." },
   { id: "sliding", name: "Sliding window", price: 20, note: "Per sliding door or window." },
   { id: "pethair", name: "Pet hair removal", price: 20, note: "Extra pass for hair." },
   { id: "laundry", name: "Laundry, one load", price: 20, note: "Wash, dry, fold." },
