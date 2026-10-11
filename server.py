@@ -1,6 +1,6 @@
 import os
 import smtplib
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from email.message import EmailMessage
 from zoneinfo import ZoneInfo
 
@@ -112,9 +112,10 @@ def busy():
                     component = event.icalendar_component
                     begin = component.get("dtstart").dt
                     finish = component.get("dtend").dt
-                    if not isinstance(begin, datetime):
+                    block = block_for(begin, finish, start)
+                    if not block:
                         continue
-                    blocks.append({"start": minutes(begin), "end": minutes(finish), "calendar": f"{label}: {name}"})
+                    blocks.append({"start": block[0], "end": block[1], "calendar": f"{label}: {name}"})
         except Exception as exc:
             errors.append(f"{label}: {exc}")
     return jsonify(connected=not errors or bool(blocks), busy=blocks, error="; ".join(errors))
