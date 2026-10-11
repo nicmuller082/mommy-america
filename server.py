@@ -8,6 +8,7 @@ from flask import Flask, jsonify, request, send_from_directory
 
 app = Flask(__name__, static_folder=".", static_url_path="")
 TZ = ZoneInfo("America/Chicago")
+WATCH = {"personal": "Work", "family": "Family"}
 
 
 def accounts():
@@ -28,12 +29,13 @@ def client_for(user, password):
     return caldav.DAVClient(url="https://caldav.icloud.com/", username=user, password=password)
 
 
-def wanted(label, name):
-    chosen = os.environ.get("ICLOUD_CALENDARS", "Family")
-    allowed = {item.strip().lower() for item in chosen.split(",") if item.strip()}
-    return (name or "").strip().lower() in allowed
+def minutes(dt):
     local = dt.astimezone(TZ)
     return local.hour * 60 + local.minute
+
+
+def watched_name(label):
+    return os.environ.get(f"ICLOUD_{label.upper()}_CALENDAR", WATCH[label])
 
 
 @app.get("/api/status")
@@ -46,7 +48,12 @@ def status():
     for user, password, label in found:
         try:
             names = [getattr(calendar, "name", "") or "Untitled" for calendar in client_for(user, password).principal().calendars()]
-            calendars.append({"account": label, "email": user, "calendars": names})
+            calendars.append({
+                "account": label,
+                "email": user,
+                "watching": watched_name(label),
+                "calendars": names,
+            })
         except Exception as exc:
             errors.append(f"{label}: {exc}")
     return jsonify(connected=bool(calendars), calendars=calendars, error="; ".join(errors))
@@ -63,25 +70,27 @@ def notify(payload):
     message["Subject"] = f"New booking · {payload.get('date')} {payload.get('start')}"
     message["From"] = user
     message["To"] = to
-    message.set_content(
-        "\n".join([
-            f"Name: {payload.get('name')}",
-            f"Phone: {payload.get('phone')}",
-            f"Address: {payload.get('address')}",
-            f"Home: {payload.get('home')}",
-            f"Service: {payload.get('kind')}",
-            f"Date: {payload.get('date')}",
-            f"Start minute: {payload.get('start')}",
-            f"End minute: {payload.get('end')}",
-            f"Total: {payload.get('total')}",
-            f"Notes: {payload.get('notes')}",
-        ])
-    )
+    message.set_content("\n".join([
+        f"Name: {payload.get('name')}",
+        f"Phone: {payload.get('phone')}",
+        f"Address: {payload.get('address')}",
+        f"Home: {payload.get('home')}",
+        f"Service: {payload.get('kind')}",
+        f"Date: {payload.get('date')}",
+        f"Start minute: {payload.get('start')}",
+        f"End minute: {payload.get('end')}",
+        f"Total: {payload.get('total')}",
+        f"Notes: {payload.get('notes')}",
+    ]))
     with smtplib.SMTP(host, int(os.environ.get("SMTP_PORT", "587"))) as smtp:
         smtp.starttls()
         smtp.login(user, password)
         smtp.send_message(message)
     return "Email sent."
+
+
+@app.get("/api/busy")
+def busy():
     day = request.args.get("date", "")
     try:
         start = datetime.strptime(day, "%Y-%m-%d").replace(tzinfo=TZ)
@@ -94,10 +103,10 @@ def notify(payload):
     errors = []
     for user, password, label in accounts():
         try:
-            principal = client_for(user, password).principal()
-            for calendar in principal.calendars():
-                name = getattr(calendar, "name", "") or label
-                if not wanted(label, name):
+            wanted = watched_name(label).lower()
+            for calendar in client_for(user, password).principal().calendars():
+                name = getattr(calendar, "name", "") or ""
+                if name.lower() != wanted:
                     continue
                 for event in calendar.search(start=start, end=end, event=True, expand=True):
                     component = event.icalendar_component
@@ -105,11 +114,7 @@ def notify(payload):
                     finish = component.get("dtend").dt
                     if not isinstance(begin, datetime):
                         continue
-                    blocks.append({
-                        "start": minutes(begin),
-                        "end": minutes(finish),
-                        "calendar": f"{label}: {name}",
-                    })
+                    blocks.append({"start": minutes(begin), "end": minutes(finish), "calendar": f"{label}: {name}"})
         except Exception as exc:
             errors.append(f"{label}: {exc}")
     return jsonify(connected=not errors or bool(blocks), busy=blocks, error="; ".join(errors))
@@ -118,15 +123,18 @@ def notify(payload):
 @app.post("/api/book")
 def book():
     payload = request.get_json(force=True)
-    personal = [item for item in accounts() if item[2] == "personal"]
-    if not personal:
-        return jsonify(saved=False, error="Personal Apple Calendar is not connected."), 400
-    user, password, _ = personal[0]
+    family = [item for item in accounts() if item[2] == "family"]
+    if not family:
+        return jsonify(saved=False, error="Family calendar is not connected."), 400
+    user, password, label = family[0]
     start = datetime.strptime(payload["date"], "%Y-%m-%d").replace(tzinfo=TZ) + timedelta(minutes=int(payload["start"]))
     finish = datetime.strptime(payload["date"], "%Y-%m-%d").replace(tzinfo=TZ) + timedelta(minutes=int(payload["end"]))
     try:
         calendars = client_for(user, password).principal().calendars()
-        target = next((c for c in calendars if (c.name or "").lower() == "family"), calendars[0])
+        wanted = watched_name(label).lower()
+        target = next((c for c in calendars if (c.name or "").lower() == wanted), None)
+        if target is None:
+            return jsonify(saved=False, error=f"No calendar named {watched_name(label)}."), 404
         target.save_event(
             dtstart=start,
             dtend=finish,
