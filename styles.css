@@ -49,7 +49,10 @@ input, select, textarea { width:100%; margin-top:4px; border:1px solid var(--lin
 .slot.open { background:#eef8f2; color:#1f7a4d; cursor:pointer; border:1px solid #cfe8da; }
 .slot.busy { background:#f8eeee; color:#a12626; border:1px solid #f0d4d4; }
 .slot.pick { outline:2px solid var(--pink); }
-.quote h3 { color:var(--pink); font-size:34px; margin:4px 0; }
+.badge { display:inline-block; border-radius:999px; padding:6px 10px; font-size:13px; font-weight:700; }
+.badge.in { background:#eef8f2; color:#1f7a4d; }
+.badge.out { background:#fff6e8; color:#9a5b00; }
+.quote { position:sticky; top:84px; }
 .line { display:flex; justify-content:space-between; gap:8px; font-size:14px; padding:5px 0; }
 .total { border-top:1px solid var(--line); margin-top:8px; padding-top:10px; font-weight:700; }
 footer { background:var(--navy); color:#fff; padding:28px 0; margin-top:20px; }

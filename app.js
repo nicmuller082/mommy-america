@@ -34,13 +34,14 @@ const addons = [
   { id: "microwave", name: "Microwave", price: 8, note: "Interior wipe." }
 ];
 const addonMinutes = { oven: 30, fridge: 30, windows: 15, sliding: 20, pethair: 30, laundry: 20, linen: 10, dishes: 15, dishesHeavy: 25, baseboards: 30, declutter: 60, fans: 10, cabinets: 30, microwave: 10 };
-const zones = {
-  cinco: { name: "Nearby Cinco Ranch", drive: 12, ok: true },
-  seven: { name: "Seven Meadows", drive: 12, ok: true },
-  grand: { name: "Grand Lakes", drive: 15, ok: true },
-  lakemont: { name: "Lakemont", drive: 12, ok: true },
-  outside: { name: "Outside the 4-mile area", drive: 25, ok: false }
-};
+const localZips = { "77406": "Richmond", "77407": "Cinco Ranch / Richmond", "77450": "Katy", "77469": "Richmond", "77494": "Katy / Grand Lakes" };
+function areaFor(zip) {
+  const clean = (zip || "").replace(/\D/g, "").slice(0, 5);
+  if (clean.length < 5) return null;
+  return localZips[clean]
+    ? { ok: true, name: localZips[clean], note: "In area. No travel fee." }
+    : { ok: false, name: "Out of area", note: "Out of area. Travel fee to be confirmed from the street address." };
+}
 const DAY_START = 8 * 60;
 const HARD_LEAVE = 14 * 60 + 30;
 const BUS = 15 * 60;
@@ -106,7 +107,8 @@ function quote() {
   const home = selectedHome();
   const freq = selectedFreq();
   const kind = selectedKind();
-  const zone = zones[document.getElementById("zone").value] || zones.cinco;
+  const area = areaFor(document.getElementById("zip")?.value);
+  const zone = area?.ok === false ? { name: area.name, drive: 25, ok: false } : { name: area?.name || "Local", drive: 12, ok: true };
   let price = priceFor(home, kind, freq) + state.baths * 20;
   const lines = [];
   if (document.getElementById("ownSupplies").checked) {
@@ -121,10 +123,10 @@ function quote() {
   });
   const minutes = durationMinutes(home, kind);
   const leaveBy = latestLeave(zone);
-  const zoneNote = zone.ok
-    ? `${zone.name} is inside the local area if the drive is within 4 miles. About ${zone.drive} minutes home.`
-    : "Outside the 4-mile area. Travel is quoted per request so the round trip stays honest.";
-  return { home, freq, kind, price, lines, minutes, leaveBy, zone, zoneNote };
+  const zoneNote = area
+    ? area.note
+    : "Enter the ZIP code to confirm whether this address is in area.";
+  return { home, freq, kind, price, lines, minutes, leaveBy, zone, zoneNote, area };
 }
 function nextWeekdays(count) {
   const days = [];
@@ -222,9 +224,14 @@ function renderQuote() {
     <div class="line"><span>${q.home.baths} bathroom${q.home.baths > 1 ? "s" : ""} included</span><span>in the price</span></div>
     <div class="line"><span>Extra bathrooms</span><span>${state.baths ? state.baths + " · " + money(state.baths * 20) : "—"}</span></div>
     ${q.lines.map(l => `<div class="line"><span>${l.name}</span><span>${money(l.cost)}</span></div>`).join("")}
+    ${q.area && !q.area.ok ? `<div class="line"><span>Travel fee</span><span>To be confirmed</span></div>` : ""}
     <div class="line"><span>Estimated time</span><span>${fmt(q.minutes)} on site</span></div>
     <div class="line total"><span>Estimated total</span><span>${money(q.price)}</span></div>
-    <p class="fine">${q.zoneNote} A personal or family Apple event on that day removes the overlapping start. The booking is written back to her personal calendar once iCloud is connected.</p>`;
+    <p class="fine">${q.zoneNote}</p>`;
+  const flag = document.getElementById("areaFlag");
+  if (flag) {
+    flag.innerHTML = q.area ? `<span class="badge ${q.area.ok ? "in" : "out"}">${q.area.ok ? "In area" : "Out of area"}</span> ${q.area.note}` : "Enter the ZIP to confirm the area.";
+  }
   document.getElementById("bathNote").textContent = `${q.home.baths} bathroom${q.home.baths > 1 ? "s" : ""} included. Each extra bathroom is $20.`;
 }
 
@@ -244,7 +251,7 @@ function init() {
   document.getElementById("kind").innerHTML = kinds.map(k => `<option value="${k.id}">${k.name}</option>`).join("");
   document.getElementById("freq").innerHTML = freqs.map(f => `<option value="${f.id}" ${f.id === "biweekly" ? "selected" : ""}>${f.name}</option>`).join("");
   renderQuote();
-  document.getElementById("confirmQuote").onclick = showAvailability;
+  document.getElementById("zip")?.addEventListener("input", renderQuote);
   document.getElementById("week")?.addEventListener("click", async e => {
     const date = e.target.dataset.date;
     if (!date) return;
