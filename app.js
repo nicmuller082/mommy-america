@@ -137,6 +137,13 @@ function nextWeekdays(count) {
   }
   return days;
 }
+function openStarts(date, q) {
+  const starts = [];
+  for (let start = DAY_START; start + q.minutes <= q.leaveBy; start += 30) {
+    if (!taken(date, start, start + q.minutes)) starts.push(start);
+  }
+  return starts;
+}
 function renderBoard(q) {
   const board = document.getElementById("dayboard");
   const week = document.getElementById("week");
@@ -145,18 +152,17 @@ function renderBoard(q) {
   document.getElementById("day").value = selected;
   week.innerHTML = nextWeekdays(8).map(date => {
     const label = new Date(date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "numeric", day: "numeric" });
-    return `<button type="button" class="${date === selected ? "on" : ""}" data-date="${date}">${label}</button>`;
+    const full = date === selected && openStarts(date, q).length === 0;
+    return `<button type="button" class="${date === selected ? "on" : ""}" data-date="${date}">${label}${full ? "<br>Fully booked" : ""}</button>`;
   }).join("");
-  const blocks = [];
-  appleBusy.forEach(b => blocks.push({ start: b.start, end: b.end, kind: "busy", label: "Booked" }));
-  for (let start = DAY_START; start + q.minutes <= q.leaveBy; start += 30) {
-    const end = start + q.minutes;
-    if (!taken(selected, start, end)) blocks.push({ start, end, kind: "open", label: "Open" });
+  const opens = openStarts(selected, q);
+  if (!opens.length) {
+    board.innerHTML = `<div class="slot busy"><span>8:00 – 14:30</span><b>Fully booked</b></div><p class="fine">No availability for this visit on this day.</p>`;
+    return;
   }
-  blocks.sort((a, b) => a.start - b.start || (a.kind === "busy" ? -1 : 1));
-  board.innerHTML = blocks.length
-    ? blocks.map(b => `<div class="slot ${b.kind}${b.kind === "open" && String(b.start) === document.getElementById("start").value ? " pick" : ""}" data-start="${b.kind === "open" ? b.start : ""}"><span>${fmt(b.start)} – ${fmt(b.end)}</span><b>${b.label}</b></div>`).join("")
-    : `<p class="fine">No open start fits this visit on ${selected}.</p>`;
+  const booked = appleBusy.map(b => `<div class="slot busy"><span>${fmt(b.start)} – ${fmt(b.end)}</span><b>Booked</b></div>`).join("");
+  const open = opens.map(start => `<div class="slot open${String(start) === document.getElementById("start").value ? " pick" : ""}" data-start="${start}"><span>${fmt(start)} – ${fmt(start + q.minutes)}</span><b>Open</b></div>`).join("");
+  board.innerHTML = booked + open;
 }
 function fillStarts(q) {
   const date = document.getElementById("day").value;
@@ -178,7 +184,7 @@ function fillStarts(q) {
   if (previous && [...select.options].some(o => o.value === previous)) select.value = previous;
   document.getElementById("timeNote").textContent = options.length
     ? `This visit is ${fmt(q.minutes).replace(":", "h ")}m. She is on site from 8:00 and must leave by ${fmt(q.leaveBy)}.`
-    : `This visit is too long to finish and still reach the bus. Drop an add-on or pick a smaller clean.`;
+    : `No availability. This visit does not fit before ${fmt(q.leaveBy)}.`;
 }
 function ics(booking) {
   const stamp = booking.date.replace(/-/g, "");
