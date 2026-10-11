@@ -212,7 +212,7 @@ function renderQuote() {
   const freqName = freqs.find(f => f.id === q.freq).name;
   const pricedAs = q.kind === "standard" ? "" : `<div class="line"><span>Priced from the deep card</span><span></span></div>`;
   fillStarts(q);
-  renderBoard(q);
+  if (!document.getElementById("availability").hidden) renderBoard(q);
   document.getElementById("summary").innerHTML = `
     <p class="script" style="font-size:28px;margin:0">Your visit</p>
     <h3>${money(q.price)}</h3>
@@ -228,6 +228,14 @@ function renderQuote() {
   document.getElementById("bathNote").textContent = `${q.home.baths} bathroom${q.home.baths > 1 ? "s" : ""} included. Each extra bathroom is $20.`;
 }
 
+function showAvailability() {
+  document.getElementById("availability").hidden = false;
+  document.getElementById("bookingFields").hidden = false;
+  document.getElementById("confirmQuote").hidden = true;
+  if (!document.getElementById("day").value) document.getElementById("day").value = nextWeekdays(1)[0];
+  loadApple(document.getElementById("day").value).then(renderQuote);
+  document.getElementById("availability").scrollIntoView({ behavior: "smooth" });
+}
 function init() {
   if (document.getElementById("standardBody")) renderTables();
   if (document.getElementById("addonList")) renderAddons();
@@ -235,9 +243,8 @@ function init() {
   document.getElementById("home").innerHTML = homes.map(h => `<option value="${h.id}" ${h.id === "32" ? "selected" : ""}>${h.name}</option>`).join("");
   document.getElementById("kind").innerHTML = kinds.map(k => `<option value="${k.id}">${k.name}</option>`).join("");
   document.getElementById("freq").innerHTML = freqs.map(f => `<option value="${f.id}" ${f.id === "biweekly" ? "selected" : ""}>${f.name}</option>`).join("");
-  if (!document.getElementById("day").value) document.getElementById("day").value = nextWeekdays(1)[0];
   renderQuote();
-  loadApple(document.getElementById("day").value).then(renderQuote);
+  document.getElementById("confirmQuote").onclick = showAvailability;
   document.getElementById("week")?.addEventListener("click", async e => {
     const date = e.target.dataset.date;
     if (!date) return;
