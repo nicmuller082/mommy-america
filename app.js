@@ -111,6 +111,38 @@ function quote() {
     : "Outside the 4-mile area. Travel is quoted per request so the round trip stays honest.";
   return { home, freq, kind, price, lines, minutes, leaveBy, zone, zoneNote };
 }
+function nextWeekdays(count) {
+  const days = [];
+  const cursor = new Date();
+  cursor.setHours(12, 0, 0, 0);
+  while (days.length < count) {
+    const day = cursor.getDay();
+    if (day !== 0 && day !== 6) days.push(cursor.toISOString().slice(0, 10));
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return days;
+}
+function renderBoard(q) {
+  const board = document.getElementById("dayboard");
+  const week = document.getElementById("week");
+  if (!board || !week) return;
+  const selected = document.getElementById("day").value || nextWeekdays(1)[0];
+  document.getElementById("day").value = selected;
+  week.innerHTML = nextWeekdays(8).map(date => {
+    const label = new Date(date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "numeric", day: "numeric" });
+    return `<button type="button" class="${date === selected ? "on" : ""}" data-date="${date}">${label}</button>`;
+  }).join("");
+  const blocks = [];
+  appleBusy.forEach(b => blocks.push({ start: b.start, end: b.end, kind: "busy", label: "Booked" }));
+  for (let start = DAY_START; start + q.minutes <= q.leaveBy; start += 30) {
+    const end = start + q.minutes;
+    if (!taken(selected, start, end)) blocks.push({ start, end, kind: "open", label: "Open" });
+  }
+  blocks.sort((a, b) => a.start - b.start || (a.kind === "busy" ? -1 : 1));
+  board.innerHTML = blocks.length
+    ? blocks.map(b => `<div class="slot ${b.kind}${b.kind === "open" && String(b.start) === document.getElementById("start").value ? " pick" : ""}" data-start="${b.kind === "open" ? b.start : ""}"><span>${fmt(b.start)} – ${fmt(b.end)}</span><b>${b.label}</b></div>`).join("")
+    : `<p class="fine">No open start fits this visit on ${selected}.</p>`;
+}
 function fillStarts(q) {
   const date = document.getElementById("day").value;
   const select = document.getElementById("start");
@@ -159,6 +191,7 @@ function renderQuote() {
   const freqName = freqs.find(f => f.id === q.freq).name;
   const pricedAs = q.kind === "standard" ? "" : `<div class="line"><span>Priced from the deep card</span><span></span></div>`;
   fillStarts(q);
+  renderBoard(q);
   document.getElementById("summary").innerHTML = `
     <p class="script" style="font-size:28px;margin:0">Your visit</p>
     <h3>${money(q.price)}</h3>
@@ -182,7 +215,19 @@ function init() {
   document.getElementById("kind").innerHTML = kinds.map(k => `<option value="${k.id}">${k.name}</option>`).join("");
   document.getElementById("freq").innerHTML = freqs.map(f => `<option value="${f.id}" ${f.id === "biweekly" ? "selected" : ""}>${f.name}</option>`).join("");
   renderQuote();
-  document.getElementById("day").addEventListener("change", async () => { await loadApple(document.getElementById("day").value); renderQuote(); });
+  document.getElementById("week")?.addEventListener("click", async e => {
+    const date = e.target.dataset.date;
+    if (!date) return;
+    document.getElementById("day").value = date;
+    await loadApple(date);
+    renderQuote();
+  });
+  document.getElementById("dayboard")?.addEventListener("click", e => {
+    const slot = e.target.closest(".slot.open");
+    if (!slot) return;
+    document.getElementById("start").value = slot.dataset.start;
+    renderQuote();
+  });
   document.querySelectorAll("#quoteForm select, #quoteForm input").forEach(el => {
     if (el.id !== "day") el.addEventListener("change", renderQuote);
   });

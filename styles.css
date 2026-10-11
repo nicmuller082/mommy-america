@@ -41,7 +41,14 @@ input, select, textarea { width:100%; margin-top:4px; border:1px solid var(--lin
 .two { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 .row, .check, .checks label { display:flex; justify-content:space-between; align-items:center; gap:8px; }
 .stepper button { width:32px; height:32px; border-radius:8px; border:1px solid var(--line); background:#fff; }
-.quote { position:sticky; top:84px; }
+.week { display:flex; gap:8px; overflow-x:auto; margin:16px 0; }
+.week button { border:1px solid var(--line); background:#fff; border-radius:10px; padding:10px 12px; min-width:92px; cursor:pointer; }
+.week button.on { background:var(--navy); color:#fff; border-color:var(--navy); }
+.dayboard { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; }
+.slot { display:flex; justify-content:space-between; align-items:center; border-radius:10px; padding:10px 12px; margin-bottom:8px; }
+.slot.open { background:#eef8f2; color:#1f7a4d; cursor:pointer; border:1px solid #cfe8da; }
+.slot.busy { background:#f8eeee; color:#a12626; border:1px solid #f0d4d4; }
+.slot.pick { outline:2px solid var(--pink); }
 .quote h3 { color:var(--pink); font-size:34px; margin:4px 0; }
 .line { display:flex; justify-content:space-between; gap:8px; font-size:14px; padding:5px 0; }
 .total { border-top:1px solid var(--line); margin-top:8px; padding-top:10px; font-weight:700; }
