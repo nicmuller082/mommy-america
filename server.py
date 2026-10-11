@@ -34,6 +34,14 @@ def minutes(dt):
     return local.hour * 60 + local.minute
 
 
+def block_for(begin, finish, day):
+    if isinstance(begin, datetime):
+        return minutes(begin), minutes(finish)
+    if isinstance(begin, date) and begin <= day.date() < finish:
+        return 8 * 60, 14 * 60 + 30
+    return None
+
+
 def watched_name(label):
     return os.environ.get(f"ICLOUD_{label.upper()}_CALENDAR", WATCH[label])
 
