@@ -160,8 +160,24 @@ def book():
     return jsonify(saved=True, email=emailed)
 
 
-@app.get("/")
-def home():
+@app.get("/api/email-test")
+def email_test():
+    try:
+        result = notify({
+            "name": "Test booking",
+            "phone": "346-833-5791",
+            "address": "Email test only",
+            "home": "Test",
+            "kind": "Email check",
+            "date": "test",
+            "start": 480,
+            "end": 540,
+            "total": 0,
+            "notes": "Delete this. It is only a connection test.",
+        })
+    except Exception as exc:
+        return jsonify(sent=False, error=str(exc)), 502
+    return jsonify(sent=result == "Email sent.", message=result)
     return send_from_directory(".", "index.html")
 
 
