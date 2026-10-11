@@ -214,7 +214,9 @@ function init() {
   document.getElementById("home").innerHTML = homes.map(h => `<option value="${h.id}" ${h.id === "32" ? "selected" : ""}>${h.name}</option>`).join("");
   document.getElementById("kind").innerHTML = kinds.map(k => `<option value="${k.id}">${k.name}</option>`).join("");
   document.getElementById("freq").innerHTML = freqs.map(f => `<option value="${f.id}" ${f.id === "biweekly" ? "selected" : ""}>${f.name}</option>`).join("");
+  if (!document.getElementById("day").value) document.getElementById("day").value = nextWeekdays(1)[0];
   renderQuote();
+  loadApple(document.getElementById("day").value).then(renderQuote);
   document.getElementById("week")?.addEventListener("click", async e => {
     const date = e.target.dataset.date;
     if (!date) return;
