@@ -64,6 +64,21 @@ function taken(date, start, end) {
   const apple = appleBusy.some(b => start < b.end && end > b.start);
   return local || apple;
 }
+async function loadStatus() {
+  const note = document.getElementById("calStatus");
+  if (!note) return;
+  try {
+    const data = await fetch("/api/status").then(r => r.json());
+    if (!data.connected) {
+      note.textContent = data.error || "Calendar is not connected.";
+      return;
+    }
+    const names = data.calendars.map(item => `${item.account}: ${item.calendars.join(", ")}`).join(" · ");
+    note.textContent = "Calendar linked. " + names;
+  } catch (err) {
+    note.textContent = "Calendar check failed. This URL may still be the static site.";
+  }
+}
 async function loadApple(date) {
   appleBusy = [];
   if (!date) return;
@@ -211,6 +226,7 @@ function init() {
   if (document.getElementById("standardBody")) renderTables();
   if (document.getElementById("addonList")) renderAddons();
   if (!document.getElementById("quoteForm")) return;
+  loadStatus();
   document.getElementById("home").innerHTML = homes.map(h => `<option value="${h.id}" ${h.id === "32" ? "selected" : ""}>${h.name}</option>`).join("");
   document.getElementById("kind").innerHTML = kinds.map(k => `<option value="${k.id}">${k.name}</option>`).join("");
   document.getElementById("freq").innerHTML = freqs.map(f => `<option value="${f.id}" ${f.id === "biweekly" ? "selected" : ""}>${f.name}</option>`).join("");
