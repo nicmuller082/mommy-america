@@ -54,6 +54,12 @@ function durationMinutes(home, kind) {
   return Math.round(base + extra);
 }
 function latestLeave(zone) { return Math.min(HARD_LEAVE, BUS - zone.drive - 5); }
+function durationLabel(mins) {
+  const h = Math.floor(mins / 60), m = mins % 60;
+  if (!m) return `${h} hour${h === 1 ? "" : "s"}`;
+  if (!h) return `${m} minutes`;
+  return `${h} hour${h === 1 ? "" : "s"} ${m} minutes`;
+}
 function fmt(mins) {
   const h = Math.floor(mins / 60), m = mins % 60;
   return `${h}:${String(m).padStart(2, "0")}`;
@@ -225,7 +231,7 @@ function renderQuote() {
     <div class="line"><span>Extra bathrooms</span><span>${state.baths ? state.baths + " · " + money(state.baths * 20) : "—"}</span></div>
     ${q.lines.map(l => `<div class="line"><span>${l.name}</span><span>${money(l.cost)}</span></div>`).join("")}
     ${q.area && !q.area.ok ? `<div class="line"><span>Travel fee</span><span>To be confirmed</span></div>` : ""}
-    <div class="line"><span>Estimated time</span><span>${fmt(q.minutes)} on site</span></div>
+    <div class="line"><span>Estimated cleaning time</span><span>${durationLabel(q.minutes)}</span></div>
     <div class="line total"><span>Estimated total</span><span>${money(q.price)}</span></div>
     <p class="fine">${q.zoneNote}</p>`;
   const flag = document.getElementById("areaFlag");
