@@ -28,7 +28,10 @@ def client_for(user, password):
     return caldav.DAVClient(url="https://caldav.icloud.com/", username=user, password=password)
 
 
-def minutes(dt):
+def wanted(label, name):
+    chosen = os.environ.get("ICLOUD_CALENDARS", "Family")
+    allowed = {item.strip().lower() for item in chosen.split(",") if item.strip()}
+    return (name or "").strip().lower() in allowed
     local = dt.astimezone(TZ)
     return local.hour * 60 + local.minute
 
@@ -94,6 +97,8 @@ def notify(payload):
             principal = client_for(user, password).principal()
             for calendar in principal.calendars():
                 name = getattr(calendar, "name", "") or label
+                if not wanted(label, name):
+                    continue
                 for event in calendar.search(start=start, end=end, event=True, expand=True):
                     component = event.icalendar_component
                     begin = component.get("dtstart").dt
@@ -121,7 +126,7 @@ def book():
     finish = datetime.strptime(payload["date"], "%Y-%m-%d").replace(tzinfo=TZ) + timedelta(minutes=int(payload["end"]))
     try:
         calendars = client_for(user, password).principal().calendars()
-        target = next((c for c in calendars if "home" in (c.name or "").lower()), calendars[0])
+        target = next((c for c in calendars if (c.name or "").lower() == "family"), calendars[0])
         target.save_event(
             dtstart=start,
             dtend=finish,
