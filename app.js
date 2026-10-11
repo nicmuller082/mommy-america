@@ -226,7 +226,6 @@ function init() {
   if (document.getElementById("standardBody")) renderTables();
   if (document.getElementById("addonList")) renderAddons();
   if (!document.getElementById("quoteForm")) return;
-  loadStatus();
   document.getElementById("home").innerHTML = homes.map(h => `<option value="${h.id}" ${h.id === "32" ? "selected" : ""}>${h.name}</option>`).join("");
   document.getElementById("kind").innerHTML = kinds.map(k => `<option value="${k.id}">${k.name}</option>`).join("");
   document.getElementById("freq").innerHTML = freqs.map(f => `<option value="${f.id}" ${f.id === "biweekly" ? "selected" : ""}>${f.name}</option>`).join("");
