@@ -180,7 +180,7 @@ function fillStarts(q) {
     if (date && taken(date, start, end)) continue;
     options.push(`<option value="${start}">${fmt(start)} – ${fmt(end)}</option>`);
   }
-  select.innerHTML = options.length ? options.join("") : `<option value="">No start fits before ${fmt(q.leaveBy)}</option>`;
+  select.innerHTML = options.length ? options.join("") : `<option value="">No availability</option>`;
   if (previous && [...select.options].some(o => o.value === previous)) select.value = previous;
   document.getElementById("timeNote").textContent = options.length
     ? `This visit is ${fmt(q.minutes).replace(":", "h ")}m. She is on site from 8:00 and must leave by ${fmt(q.leaveBy)}.`
