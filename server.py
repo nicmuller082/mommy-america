@@ -149,7 +149,7 @@ def book():
             dtend=finish,
             summary=f"Mommy America · {payload.get('home', 'Cleaning')}",
             location=payload.get("address", ""),
-            description=payload.get("notes", ""),
+            description=f"{payload.get('kind', '')}. {payload.get('extras', '')}. {payload.get('notes', '')}".strip(),
         )
     except Exception as exc:
         return jsonify(saved=False, error=str(exc)), 502

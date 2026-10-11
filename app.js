@@ -204,7 +204,7 @@ function renderAddons() {
   const list = document.getElementById("addonList");
   if (list) list.innerHTML = addons.map(a => `<div class="addon"><span><b>${a.name}</b><br><span class="fine">${a.note}</span></span><b>${money(a.price)}</b></div>`).join("");
   const checks = document.getElementById("addonChecks");
-  if (checks) checks.innerHTML = addons.map(a => `<label class="check"><span>${a.name}</span><span><input type="checkbox" data-addon="${a.id}" /> ${money(a.price)}</span></label>`).join("");
+  if (checks) checks.innerHTML = addons.map(a => `<label class="check"><span>${a.name}<br><span class="fine">${addonMinutes[a.id]} min</span></span><span><input type="checkbox" data-addon="${a.id}" /> ${money(a.price)}</span></label>`).join("");
 }
 function renderQuote() {
   const q = quote();
@@ -222,8 +222,8 @@ function renderQuote() {
     <div class="line"><span>${q.home.baths} bathroom${q.home.baths > 1 ? "s" : ""} included</span><span>in the price</span></div>
     <div class="line"><span>Extra bathrooms</span><span>${state.baths ? state.baths + " · " + money(state.baths * 20) : "—"}</span></div>
     ${q.lines.map(l => `<div class="line"><span>${l.name}</span><span>${money(l.cost)}</span></div>`).join("")}
+    <div class="line"><span>Estimated time</span><span>${fmt(q.minutes)} on site</span></div>
     <div class="line total"><span>Estimated total</span><span>${money(q.price)}</span></div>
-    <div class="line"><span>On site</span><span>${fmt(q.minutes)} · leave by ${fmt(q.leaveBy)}</span></div>
     <p class="fine">${q.zoneNote} A personal or family Apple event on that day removes the overlapping start. The booking is written back to her personal calendar once iCloud is connected.</p>`;
   document.getElementById("bathNote").textContent = `${q.home.baths} bathroom${q.home.baths > 1 ? "s" : ""} included. Each extra bathroom is $20.`;
 }
@@ -238,7 +238,7 @@ function showAvailability() {
 }
 function init() {
   if (document.getElementById("standardBody")) renderTables();
-  if (document.getElementById("addonList")) renderAddons();
+  if (document.getElementById("addonList") || document.getElementById("addonChecks")) renderAddons();
   if (!document.getElementById("quoteForm")) return;
   document.getElementById("home").innerHTML = homes.map(h => `<option value="${h.id}" ${h.id === "32" ? "selected" : ""}>${h.name}</option>`).join("");
   document.getElementById("kind").innerHTML = kinds.map(k => `<option value="${k.id}">${k.name}</option>`).join("");
@@ -280,6 +280,7 @@ function init() {
       start,
       end: start + q.minutes,
       notes: document.getElementById("notes").value,
+      extras: q.lines.map(l => l.name).join(", "),
       home: q.home.name,
       kind: kinds.find(k => k.id === q.kind).name,
       total: q.price
