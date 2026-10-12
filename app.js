@@ -67,9 +67,7 @@ function fmt(mins) {
 function bookings() { return JSON.parse(localStorage.getItem("mommy-bookings") || "[]"); }
 let appleBusy = [];
 function taken(date, start, end) {
-  const local = bookings().some(b => b.date === date && start < b.end && end > b.start);
-  const apple = appleBusy.some(b => start < b.end && end > b.start);
-  return local || apple;
+  return appleBusy.some(b => start < b.end && end > b.start);
 }
 async function loadStatus() {
   const note = document.getElementById("calStatus");
