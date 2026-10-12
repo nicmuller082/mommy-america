@@ -148,9 +148,9 @@ def book():
         target.save_event(
             dtstart=start,
             dtend=finish,
-            summary=f"Mommy America · {payload.get('home', 'Cleaning')}",
+            summary=f"Mommy America; {payload.get('home', 'Cleaning')}, {payload.get('name', '')}",
             location=payload.get("address", ""),
-            description=f"{payload.get('kind', '')}. {payload.get('extras', '')}. {payload.get('notes', '')}".strip(),
+            description=f"{payload.get('kind', '')}. {payload.get('phone', '')}. {payload.get('extras', '')}".strip(),
         )
     except Exception as exc:
         return jsonify(saved=False, error=str(exc)), 502
@@ -179,6 +179,10 @@ def email_test():
     except Exception as exc:
         return jsonify(sent=False, error=str(exc)), 502
     return jsonify(sent=result == "Email sent.", message=result)
+
+
+@app.get("/")
+def home():
     return send_from_directory(".", "index.html")
 
 

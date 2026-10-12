@@ -115,7 +115,8 @@ function fullAddress() {
   const apt = document.getElementById("apt")?.value.trim() || "";
   const suburb = document.getElementById("suburb")?.value.trim() || "";
   const zip = document.getElementById("zip")?.value.trim() || "";
-  return [house, street, apt && `Apt ${apt}`, suburb, zip].filter(Boolean).join(", ");
+  const line = [house, street].filter(Boolean).join(" ");
+  return [line, apt && `Apt ${apt}`, suburb, "TX", zip].filter(Boolean).join(", ");
 }
 function quote() {
   const home = selectedHome();
@@ -372,7 +373,7 @@ function init() {
     const all = bookings();
     all.push(booking);
     localStorage.setItem("mommy-bookings", JSON.stringify(all));
-    let apple = "Download started for Apple Calendar.";
+    let apple = "Added to the Family calendar.";
     try {
       const response = await fetch("/api/book", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(booking) });
       const data = await response.json();
@@ -380,12 +381,7 @@ function init() {
     } catch (err) {
       apple = "Apple write is not available until the server is connected.";
     }
-    const file = new Blob([ics(booking)], { type: "text/calendar" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(file);
-    link.download = "mommy-america-booking.ics";
-    link.click();
-    document.getElementById("confirm").textContent = `${booking.name}, ${booking.kind} at ${booking.address} on ${booking.date}, ${fmt(booking.start)} to ${fmt(booking.end)}. ${apple}`;
+    document.getElementById("confirm").textContent = `${booking.name}, ${booking.home} on ${booking.date}, ${fmt(booking.start)} to ${fmt(booking.end)}. ${apple}`;
     document.getElementById("modal").classList.add("on");
   };
   document.getElementById("close").onclick = () => document.getElementById("modal").classList.remove("on");
