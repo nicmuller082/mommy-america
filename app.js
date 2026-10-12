@@ -100,9 +100,9 @@ async function loadApple(date) {
   }
 }
 
-function selectedHome() { return homes.find(h => h.id === document.getElementById("home").value) || homes[3]; }
-function selectedFreq() { return document.getElementById("freq").value || "biweekly"; }
-function selectedKind() { return document.getElementById("kind").value || "standard"; }
+function selectedHome() { return homes.find(h => h.id === document.getElementById("home").value) || null; }
+function selectedFreq() { return document.getElementById("freq").value || ""; }
+function selectedKind() { return document.getElementById("kind").value || ""; }
 
 function priceFor(home, kind, freq) {
   const card = kind === "standard" ? home.standard : home.deep;
@@ -234,7 +234,8 @@ function renderQuote() {
   if (!document.getElementById("availability").hidden) renderBoard(q);
   document.getElementById("summary").innerHTML = `
     <p class="script" style="font-size:28px;margin:0">Your visit</p>
-    <h3>${money(q.price)}</h3>
+    <h3>${q.price ? money(q.price) : "—"}</h3>
+    ${q.price ? "" : `<p class="fine">Choose the home, cleaning, and schedule.</p>`}
     <div class="line"><span>${q.home.name}</span><span>${kindName}</span></div>
     <div class="line"><span>${freqName}</span><span>${durationLabel(q.minutes)}</span></div>
     ${document.getElementById("name")?.value ? `<div class="line"><span>${document.getElementById("name").value}</span><span>${document.getElementById("phone").value}</span></div>` : ""}
