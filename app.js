@@ -318,7 +318,13 @@ function init() {
   document.getElementById("kind").innerHTML = `<option value="">Select the cleaning</option>` + kinds.map(k => `<option value="${k.id}">${k.name}</option>`).join("");
   document.getElementById("freq").innerHTML = `<option value="">Select the schedule</option>` + freqs.map(f => `<option value="${f.id}">${f.name}</option>`).join("");
   renderQuote();
-  document.getElementById("confirmQuote").onclick = showAvailability;
+  document.getElementById("useTime").onclick = () => {
+    const area = areaFor(document.getElementById("zip").value);
+    const suburb = document.getElementById("suburb");
+    if (suburb && area && !suburb.value) suburb.value = area.name;
+    document.getElementById("details").hidden = false;
+    document.getElementById("details").scrollIntoView({ behavior: "smooth" });
+  };
   document.getElementById("zip")?.addEventListener("input", renderQuote);
   document.getElementById("week")?.addEventListener("click", async e => {
     const button = e.target.closest("button");
@@ -335,6 +341,7 @@ function init() {
     const slot = e.target.closest(".slot.open");
     if (!slot) return;
     document.getElementById("start").value = slot.dataset.start;
+    document.getElementById("useTime").hidden = false;
     renderQuote();
   });
   document.querySelectorAll("#quoteForm select, #quoteForm input").forEach(el => {
@@ -346,7 +353,7 @@ function init() {
   });
   document.getElementById("bathPlus").onclick = () => { state.baths = Math.min(4, state.baths + 1); document.getElementById("baths").textContent = state.baths; renderQuote(); };
   document.getElementById("bathMinus").onclick = () => { state.baths = Math.max(0, state.baths - 1); document.getElementById("baths").textContent = state.baths; renderQuote(); };
-  document.getElementById("quoteForm").onsubmit = e => {
+  document.getElementById("quoteFormDetails").onsubmit = e => {
     e.preventDefault();
     const missing = ["name", "phone", "email", "street"].find(id => !document.getElementById(id).value.trim());
     if (missing) return alert("Name, contact number, email, and street address are required.");

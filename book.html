@@ -29,18 +29,6 @@
       <label>ZIP code<input id="zip" inputmode="numeric" maxlength="5" /></label>
       <p class="fine" id="areaFlag">Enter the ZIP to confirm the area.</p>
       <button class="btn" type="button" id="confirmQuote">Confirm and see times</button>
-      <div id="bookingFields" hidden>
-        <label>Name and surname<input id="name" required /></label>
-        <label>Contact number<input id="phone" required /></label>
-        <label>Email<input id="email" type="email" required /></label>
-        <label>Street address<input id="street" required /></label>
-        <div class="two"><label>House number<input id="house" /></label><label>Apt<input id="apt" /></label></div>
-        <label>Suburb<input id="suburb" /></label>
-        <input id="address" type="hidden" />
-        <input id="day" type="hidden" />
-        <input id="start" type="hidden" />
-        <button class="btn" type="submit">Book this visit</button>
-      </div>
     </form>
     <aside class="panel quote" id="summary"></aside>
   </section>
@@ -54,6 +42,24 @@
     </div>
     <div id="week" class="week"></div>
     <div id="dayboard" class="dayboard"></div>
+    <button class="btn" type="button" id="useTime" hidden>Continue with this time</button>
+  </section>
+  <section id="details" hidden>
+    <p class="kicker">STEP 3</p>
+    <h1>Your details.</h1>
+    <p class="lede">These are required to confirm the visit.</p>
+    <form id="quoteFormDetails" class="panel">
+      <label>Name and surname<input id="name" required /></label>
+      <label>Contact number<input id="phone" required /></label>
+      <label>Email<input id="email" type="email" required /></label>
+      <label>Street address<input id="street" required /></label>
+      <div class="two"><label>House number<input id="house" /></label><label>Apt<input id="apt" /></label></div>
+      <label>Suburb<input id="suburb" /></label>
+      <input id="address" type="hidden" />
+      <input id="day" type="hidden" />
+      <input id="start" type="hidden" />
+      <button class="btn" type="submit">Book this visit</button>
+    </form>
   </section>
 </main>
 <footer><div class="wrap footer-grid"><div><strong>Mommy America Cleaning</strong></div><a href="tel:+13468335791">346-833-5791</a><span>Coverage confirmed by address</span></div></footer>
