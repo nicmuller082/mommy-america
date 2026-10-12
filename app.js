@@ -258,9 +258,31 @@ function renderQuote() {
   document.getElementById("bathNote").textContent = `${q.home.baths} bathroom${q.home.baths > 1 ? "s" : ""} included. Each extra bathroom is $20.`;
 }
 
+const loadingLines = [
+  "Dusting the calendar.",
+  "Fluffing the open times.",
+  "Checking which mornings are still sparkling.",
+  "Sweeping yesterday off the schedule.",
+  "Looking for a clear spot on the counter. And the calendar.",
+  "One moment. The mop is consulting the diary.",
+  "Shaking out the week.",
+  "Finding a window that is actually open.",
+  "Polishing the available hours.",
+  "Almost there. Just wiping the last booked slot."
+];
+let loadingTimer;
 function setLoading(on) {
   const box = document.getElementById("loadingTimes");
+  const line = document.getElementById("loadingLine");
   if (box) box.hidden = !on;
+  clearInterval(loadingTimer);
+  if (!on || !line) return;
+  let i = 0;
+  line.textContent = loadingLines[0];
+  loadingTimer = setInterval(() => {
+    i = (i + 1) % loadingLines.length;
+    line.textContent = loadingLines[i];
+  }, 1600);
 }
 async function firstOpenDay(q) {
   for (const date of nextWeekdays(8)) {
