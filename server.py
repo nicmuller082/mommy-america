@@ -74,9 +74,12 @@ STORE = Path("/tmp/mommy-bookings.json")
 
 
 def load_store():
-    if not STORE.exists():
+    try:
+        if not STORE.exists():
+            return {}
+        return json.loads(STORE.read_text())
+    except Exception:
         return {}
-    return json.loads(STORE.read_text())
 
 
 def save_store(data):
@@ -249,18 +252,21 @@ def write_calendar(payload, start, finish):
 
 @app.post("/api/book")
 def book():
-    payload = request.get_json(force=True)
-    if not [item for item in accounts() if item[2] == "family"]:
-        return jsonify(saved=False, error="Family calendar is not connected."), 400
-    start = datetime.strptime(payload["date"], "%Y-%m-%d").replace(tzinfo=TZ) + timedelta(minutes=int(payload["start"]))
-    finish = datetime.strptime(payload["date"], "%Y-%m-%d").replace(tzinfo=TZ) + timedelta(minutes=int(payload["end"]))
-    ref = uuid.uuid4().hex[:10]
-    payload["manage"] = request.host_url.rstrip("/") + "/manage/" + ref
-    store = load_store()
-    store[ref] = payload
-    save_store(store)
-    threading.Thread(target=lambda: (write_calendar(payload, start, finish), notify(payload), invoice_email(payload, start, finish)), daemon=True).start()
-    return jsonify(saved=True, manage=payload["manage"])
+    try:
+        payload = request.get_json(force=True)
+        if not [item for item in accounts() if item[2] == "family"]:
+            return jsonify(saved=False, error="Family calendar is not connected."), 400
+        start = datetime.strptime(payload["date"], "%Y-%m-%d").replace(tzinfo=TZ) + timedelta(minutes=int(payload["start"]))
+        finish = datetime.strptime(payload["date"], "%Y-%m-%d").replace(tzinfo=TZ) + timedelta(minutes=int(payload["end"]))
+        ref = uuid.uuid4().hex[:10]
+        payload["manage"] = request.host_url.rstrip("/") + "/manage/" + ref
+        store = load_store()
+        store[ref] = payload
+        save_store(store)
+        threading.Thread(target=lambda: (write_calendar(payload, start, finish), notify(payload), invoice_email(payload, start, finish)), daemon=True).start()
+        return jsonify(saved=True, manage=payload["manage"])
+    except Exception as exc:
+        return jsonify(saved=False, error=str(exc)), 500
 
 
 @app.route("/manage/<ref>", methods=["GET", "POST"])

@@ -388,7 +388,7 @@ async function sendBooking(booking) {
   document.getElementById("modalTitle").textContent = "Booked";
   document.getElementById("confirm").textContent = `${booking.name}, ${booking.home} on ${booking.date}, ${fmt(booking.start)} to ${fmt(booking.end)}. Confirmation is on its way.`;
   fetch("/api/book", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(booking) })
-    .then(r => r.json())
+    .then(r => r.json().catch(() => ({ saved: false, error: "The server did not answer." })))
     .then(data => {
       if (data.manage) document.getElementById("confirm").innerHTML += `<br><a href="${data.manage}">Manage appointment</a>`;
       if (!data.saved) document.getElementById("confirm").textContent = data.error || "The booking did not send.";
