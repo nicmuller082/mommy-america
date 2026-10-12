@@ -258,6 +258,13 @@ function renderQuote() {
   document.getElementById("bathNote").textContent = `${q.home.baths} bathroom${q.home.baths > 1 ? "s" : ""} included. Each extra bathroom is $20.`;
 }
 
+async function firstOpenDay(q) {
+  for (const date of nextWeekdays(8)) {
+    await loadApple(date);
+    if (openStarts(date, q).length) return date;
+  }
+  return nextWeekdays(1)[0];
+}
 function showAvailability() {
   document.getElementById("availability").hidden = false;
   document.getElementById("bookingFields").hidden = false;
@@ -265,8 +272,10 @@ function showAvailability() {
   const area = areaFor(document.getElementById("zip").value);
   const suburb = document.getElementById("suburb");
   if (suburb && area && !suburb.value) suburb.value = area.name;
-  if (!document.getElementById("day").value) document.getElementById("day").value = nextWeekdays(1)[0];
-  loadApple(document.getElementById("day").value).then(renderQuote);
+  firstOpenDay(quote()).then(date => {
+    document.getElementById("day").value = date;
+    return loadApple(date);
+  }).then(renderQuote);
   document.getElementById("availability").scrollIntoView({ behavior: "smooth" });
 }
 function init() {
@@ -280,9 +289,11 @@ function init() {
   document.getElementById("confirmQuote").onclick = showAvailability;
   document.getElementById("zip")?.addEventListener("input", renderQuote);
   document.getElementById("week")?.addEventListener("click", async e => {
-    const date = e.target.dataset.date;
+    const button = e.target.closest("button");
+    const date = button?.dataset.date;
     if (!date) return;
     document.getElementById("day").value = date;
+    document.getElementById("start").value = "";
     await loadApple(date);
     renderQuote();
   });
