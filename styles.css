@@ -52,7 +52,7 @@ input, select, textarea { width:100%; margin-top:4px; border:1px solid var(--lin
 .slot { display:flex; justify-content:space-between; align-items:center; border-radius:10px; padding:10px 12px; margin-bottom:8px; }
 .slot.open { background:#eef8f2; color:#1f7a4d; cursor:pointer; border:1px solid #cfe8da; }
 .slot.busy { background:#f8eeee; color:#a12626; border:1px solid #f0d4d4; }
-.slot.pick { outline:2px solid var(--pink); }
+.btn.tiny { padding:8px 12px; font-size:14px; }
 .badge { display:inline-block; border-radius:999px; padding:6px 10px; font-size:13px; font-weight:700; }
 .badge.in { background:#eef8f2; color:#1f7a4d; }
 .badge.out { background:#fff6e8; color:#9a5b00; }

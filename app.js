@@ -179,7 +179,10 @@ function renderBoard(q) {
     return;
   }
   const booked = appleBusy.map(b => `<div class="slot busy"><span>${fmt(b.start)} – ${fmt(b.end)}</span><b>Booked</b></div>`).join("");
-  const open = opens.map(start => `<div class="slot open${String(start) === document.getElementById("start").value ? " pick" : ""}" data-start="${start}"><span>${fmt(start)} – ${fmt(start + q.minutes)}</span><b>Open</b></div>`).join("");
+  const open = opens.map(start => {
+    const picked = String(start) === document.getElementById("start").value;
+    return `<div class="slot open${picked ? " pick" : ""}" data-start="${start}"><span>${fmt(start)} – ${fmt(start + q.minutes)}</span><b>${picked ? `<button type="button" class="btn tiny" id="useTime">Continue</button>` : "Open"}</b></div>`;
+  }).join("");
   board.innerHTML = booked + open;
 }
 function fillStarts(q) {
@@ -338,10 +341,17 @@ function init() {
     renderQuote();
   });
   document.getElementById("dayboard")?.addEventListener("click", e => {
+    if (e.target.id === "useTime") {
+      const area = areaFor(document.getElementById("zip").value);
+      const suburb = document.getElementById("suburb");
+      if (suburb && area && !suburb.value) suburb.value = area.name;
+      document.getElementById("details").hidden = false;
+      document.getElementById("details").scrollIntoView({ behavior: "smooth" });
+      return;
+    }
     const slot = e.target.closest(".slot.open");
     if (!slot) return;
     document.getElementById("start").value = slot.dataset.start;
-    document.getElementById("useTime").hidden = false;
     renderQuote();
   });
   document.querySelectorAll("#quoteForm select, #quoteForm input").forEach(el => {
