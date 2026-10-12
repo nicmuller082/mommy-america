@@ -101,6 +101,9 @@ def send_message(message):
         smtp.starttls()
         smtp.login(user, password)
         smtp.send_message(message)
+
+
+def notify(payload, client=False):
     host = os.environ.get("SMTP_HOST")
     user = os.environ.get("SMTP_USER")
     password = os.environ.get("SMTP_PASSWORD")
@@ -111,7 +114,6 @@ def send_message(message):
     message["Subject"] = f"Mommy America booking · {payload.get('date')}"
     message["From"] = user
     message["To"] = to
-    manage = payload.get("manage", "")
     message.set_content("\n".join([
         f"Name: {payload.get('name')}",
         f"Phone: {payload.get('phone')}",
@@ -119,10 +121,11 @@ def send_message(message):
         f"Address: {payload.get('address')}",
         f"Home: {payload.get('home')}",
         f"Service: {payload.get('kind')}",
+        f"Schedule: {payload.get('freq')}",
         f"Date: {payload.get('date')}",
         f"Time: {payload.get('start')} to {payload.get('end')}",
         f"Total: {payload.get('total')}",
-        f"Manage or change this booking: {manage}",
+        f"Manage: {payload.get('manage', '')}",
     ]))
     send_message(message)
     return "Email sent."
