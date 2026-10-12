@@ -366,6 +366,7 @@ function init() {
       extras: q.lines.map(l => l.name).join(", "),
       home: q.home.name,
       kind: kinds.find(k => k.id === q.kind).name,
+      freq: freqs.find(f => f.id === q.freq).name,
       total: q.price
     };
     document.getElementById("modalTitle").textContent = "Confirm this visit";

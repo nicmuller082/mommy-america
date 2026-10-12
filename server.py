@@ -146,7 +146,85 @@ def busy():
     return jsonify(connected=not errors or bool(blocks), busy=blocks, error="; ".join(errors))
 
 
-def write_calendar(payload, start, finish):
+RULES = {"Weekly": "FREQ=WEEKLY", "Every 2 weeks": "FREQ=WEEKLY;INTERVAL=2", "Monthly": "FREQ=MONTHLY"}
+
+
+def clock(minutes):
+    return f"{minutes // 60:02d}:{minutes % 60:02d}"
+
+
+def ics_for(payload, start, finish):
+    rule = RULES.get(payload.get("freq", ""), "")
+    stamp = datetime.now(TZ).strftime("%Y%m%dT%H%M%S")
+    begin = start.strftime("%Y%m%dT%H%M%S")
+    end = finish.strftime("%Y%m%dT%H%M%S")
+    lines = [
+        "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Mommy America//Booking//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
+        "BEGIN:VEVENT", f"UID:{payload.get('manage', stamp)}@mommyamerica", f"DTSTAMP:{stamp}",
+        f"DTSTART;TZID=America/Chicago:{begin}", f"DTEND;TZID=America/Chicago:{end}",
+    ]
+    if rule:
+        lines.append("RRULE:" + rule)
+    lines += [
+        f"SUMMARY:Mommy America; {payload.get('home', '')}, {payload.get('name', '')}",
+        f"LOCATION:{payload.get('address', '')}",
+        f"DESCRIPTION:Contact {payload.get('phone', '')}. {payload.get('kind', '')}. {payload.get('freq', '')}.",
+        "END:VEVENT", "END:VCALENDAR",
+    ]
+    return "\r\n".join(lines)
+
+
+def google_link(payload, start, finish):
+    from urllib.parse import quote
+    text = quote(f"Mommy America; {payload.get('home', '')}")
+    dates = start.strftime("%Y%m%dT%H%M%S") + "/" + finish.strftime("%Y%m%dT%H%M%S")
+    rule = RULES.get(payload.get("freq", ""), "")
+    recur = f"&recur={quote('RRULE:' + rule)}" if rule else ""
+    return f"https://calendar.google.com/calendar/render?action=TEMPLATE&text={text}&dates={dates}&location={quote(payload.get('address', ''))}&ctz=America/Chicago{recur}"
+
+
+def invoice_email(payload, start, finish):
+    host = os.environ.get("SMTP_HOST")
+    user = os.environ.get("SMTP_USER")
+    password = os.environ.get("SMTP_PASSWORD")
+    to = payload.get("email")
+    if not (host and user and password and to):
+        return
+    when = f"{payload.get('date')} · {clock(int(payload.get('start', 0)))} to {clock(int(payload.get('end', 0)))}"
+    html = f"""
+    <div style="font-family:Arial,sans-serif;background:#f6f7f9;padding:24px;color:#1c2838">
+      <div style="max-width:640px;margin:auto;background:#fff;border-radius:16px;overflow:hidden">
+        <div style="background:#16315f;color:#fff;padding:22px 28px"><div style="font-size:22px">Mommy <span style="color:#e23b78">America</span></div><div>You live. I clean.</div></div>
+        <div style="padding:28px">
+          <h1 style="color:#16315f;margin:0 0 8px">Thank you, {payload.get('name', '').split(' ')[0]}.</h1>
+          <p>Your visit is booked. The attached calendar file opens in Apple Calendar and Google Calendar.</p>
+          <p><a href="{google_link(payload, start, finish)}" style="background:#e23b78;color:#fff;text-decoration:none;padding:12px 16px;border-radius:8px;display:inline-block">Add to Google Calendar</a></p>
+          <h2 style="color:#16315f">Invoice</h2>
+          <table style="width:100%;border-collapse:collapse">
+            <tr><td style="padding:8px 0;border-bottom:1px solid #e6e1e4">Home</td><td style="text-align:right">{payload.get('home')}</td></tr>
+            <tr><td style="padding:8px 0;border-bottom:1px solid #e6e1e4">Service</td><td style="text-align:right">{payload.get('kind')}</td></tr>
+            <tr><td style="padding:8px 0;border-bottom:1px solid #e6e1e4">Schedule</td><td style="text-align:right">{payload.get('freq')}</td></tr>
+            <tr><td style="padding:8px 0;border-bottom:1px solid #e6e1e4">First visit</td><td style="text-align:right">{when}</td></tr>
+            <tr><td style="padding:8px 0;border-bottom:1px solid #e6e1e4">Address</td><td style="text-align:right">{payload.get('address')}</td></tr>
+            <tr><td style="padding:8px 0;border-bottom:1px solid #e6e1e4">Extras</td><td style="text-align:right">{payload.get('extras') or 'None'}</td></tr>
+            <tr><td style="padding:12px 0;font-weight:700">Total</td><td style="text-align:right;font-weight:700;color:#e23b78">${payload.get('total')}</td></tr>
+          </table>
+          <p>Manage this booking: <a href="{payload.get('manage')}">{payload.get('manage')}</a></p>
+          <p>Questions, call or text 346-833-5791.</p>
+        </div>
+      </div>
+    </div>"""
+    message = EmailMessage()
+    message["Subject"] = f"Thank you · Mommy America · {payload.get('date')}"
+    message["From"] = user
+    message["To"] = to
+    message.set_content(f"Thank you. Your {payload.get('freq')} visit is booked for {when}. Total ${payload.get('total')}.")
+    message.add_alternative(html, subtype="html")
+    message.add_attachment(ics_for(payload, start, finish).encode(), maintype="text", subtype="calendar", filename="mommy-america-visit.ics")
+    with smtplib.SMTP(host, int(os.environ.get("SMTP_PORT", "587")), timeout=12) as smtp:
+        smtp.starttls()
+        smtp.login(user, password)
+        smtp.send_message(message)
     family = [item for item in accounts() if item[2] == "family"]
     if not family:
         return
@@ -177,7 +255,7 @@ def book():
     store = load_store()
     store[ref] = payload
     save_store(store)
-    threading.Thread(target=lambda: (write_calendar(payload, start, finish), notify(payload), notify(payload, client=True)), daemon=True).start()
+    threading.Thread(target=lambda: (write_calendar(payload, start, finish), notify(payload), invoice_email(payload, start, finish)), daemon=True).start()
     return jsonify(saved=True, manage=payload["manage"])
 
 
