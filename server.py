@@ -1,4 +1,6 @@
-import os
+import json
+import uuid
+from pathlib import Path
 import smtplib
 from datetime import datetime, timedelta, date
 from email.message import EmailMessage
@@ -67,7 +69,48 @@ def status():
     return jsonify(connected=bool(calendars), calendars=calendars, error="; ".join(errors))
 
 
-def notify(payload):
+STORE = Path("/tmp/mommy-bookings.json")
+
+
+def load_store():
+    if not STORE.exists():
+        return {}
+    return json.loads(STORE.read_text())
+
+
+def save_store(data):
+    STORE.write_text(json.dumps(data))
+
+
+def notify(payload, client=False):
+    host = os.environ.get("SMTP_HOST")
+    user = os.environ.get("SMTP_USER")
+    password = os.environ.get("SMTP_PASSWORD")
+    to = payload.get("email") if client else os.environ.get("BOOKING_EMAIL", user)
+    if not (host and user and password and to):
+        return "Email is not set up yet."
+    message = EmailMessage()
+    message["Subject"] = f"Mommy America booking · {payload.get('date')}"
+    message["From"] = user
+    message["To"] = to
+    manage = payload.get("manage", "")
+    message.set_content("\n".join([
+        f"Name: {payload.get('name')}",
+        f"Phone: {payload.get('phone')}",
+        f"Email: {payload.get('email')}",
+        f"Address: {payload.get('address')}",
+        f"Home: {payload.get('home')}",
+        f"Service: {payload.get('kind')}",
+        f"Date: {payload.get('date')}",
+        f"Time: {payload.get('start')} to {payload.get('end')}",
+        f"Total: {payload.get('total')}",
+        f"Manage or change this booking: {manage}",
+    ]))
+    with smtplib.SMTP(host, int(os.environ.get("SMTP_PORT", "587"))) as smtp:
+        smtp.starttls()
+        smtp.login(user, password)
+        smtp.send_message(message)
+    return "Email sent."
     host = os.environ.get("SMTP_HOST")
     user = os.environ.get("SMTP_USER")
     password = os.environ.get("SMTP_PASSWORD")
@@ -154,13 +197,49 @@ def book():
         )
     except Exception as exc:
         return jsonify(saved=False, error=str(exc)), 502
+    ref = uuid.uuid4().hex[:10]
+    payload["manage"] = request.host_url.rstrip("/") + "/manage/" + ref
+    store = load_store()
+    store[ref] = payload
+    save_store(store)
     try:
         emailed = notify(payload)
+        notify(payload, client=True)
     except Exception as exc:
         emailed = f"Calendar saved, email failed: {exc}"
-    return jsonify(saved=True, email=emailed)
+    return jsonify(saved=True, email=emailed, manage=payload["manage"])
 
 
+@app.route("/manage/<ref>", methods=["GET", "POST"])
+def manage(ref):
+    store = load_store()
+    booking = store.get(ref)
+    if not booking:
+        return "This booking link is no longer available.", 404
+    note = ""
+    if request.method == "POST":
+        action = request.form.get("action")
+        if action == "cancel":
+            booking["status"] = "cancelled"
+            note = "Cancelled. We will remove it from the calendar."
+        else:
+            booking["change"] = request.form.get("change", "")
+            note = "Change request sent."
+        store[ref] = booking
+        save_store(store)
+        try:
+            notify({**booking, "notes": note + " " + booking.get("change", "")})
+        except Exception:
+            pass
+    return f"""<!doctype html><meta name=viewport content="width=device-width,initial-scale=1"><title>Manage booking</title>
+    <body style="font-family:sans-serif;max-width:640px;margin:40px auto;padding:0 16px">
+    <h1>Your Mommy America visit</h1>
+    <p>{booking.get('name')} · {booking.get('home')} · {booking.get('kind')}</p>
+    <p>{booking.get('date')} · {booking.get('address')}</p>
+    <p>{booking.get('phone')} · {booking.get('email')}</p>
+    <p>{note}</p>
+    <form method="post"><label>Request a change<br><textarea name="change" rows="4" style="width:100%"></textarea></label><p><button name="action" value="change">Send change</button> <button name="action" value="cancel">Cancel visit</button></p></form>
+    </body>"""
 @app.get("/api/email-test")
 def email_test():
     try:

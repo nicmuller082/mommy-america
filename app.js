@@ -281,7 +281,7 @@ function setLoading(on) {
   loadingTimer = setInterval(() => {
     i = (i + 1) % loadingLines.length;
     line.textContent = loadingLines[i];
-  }, 1600);
+  }, 4000);
 }
 async function firstOpenDay(q) {
   for (const date of nextWeekdays(8)) {
@@ -346,7 +346,7 @@ function init() {
   });
   document.getElementById("bathPlus").onclick = () => { state.baths = Math.min(4, state.baths + 1); document.getElementById("baths").textContent = state.baths; renderQuote(); };
   document.getElementById("bathMinus").onclick = () => { state.baths = Math.max(0, state.baths - 1); document.getElementById("baths").textContent = state.baths; renderQuote(); };
-  document.getElementById("quoteForm").onsubmit = async e => {
+  document.getElementById("quoteForm").onsubmit = e => {
     e.preventDefault();
     const missing = ["name", "phone", "email", "street"].find(id => !document.getElementById(id).value.trim());
     if (missing) return alert("Name, contact number, email, and street address are required.");
@@ -358,7 +358,7 @@ function init() {
       name: document.getElementById("name").value,
       phone: document.getElementById("phone").value,
       email: document.getElementById("email").value,
-      address: document.getElementById("address").value,
+      address: fullAddress(),
       date: document.getElementById("day").value,
       start,
       end: start + q.minutes,
@@ -368,20 +368,35 @@ function init() {
       kind: kinds.find(k => k.id === q.kind).name,
       total: q.price
     };
-    const all = bookings();
-    all.push(booking);
-    localStorage.setItem("mommy-bookings", JSON.stringify(all));
-    let apple = "Added to the Family calendar.";
-    try {
-      const response = await fetch("/api/book", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(booking) });
-      const data = await response.json();
-      apple = data.saved ? "Added to her personal Apple Calendar." : data.error;
-    } catch (err) {
-      apple = "Apple write is not available until the server is connected.";
-    }
-    document.getElementById("confirm").textContent = `${booking.name}, ${booking.home} on ${booking.date}, ${fmt(booking.start)} to ${fmt(booking.end)}. ${apple}`;
+    document.getElementById("modalTitle").textContent = "Confirm this visit";
+    document.getElementById("confirm").textContent = `${booking.name}, ${booking.home}, ${booking.kind}, ${booking.date}, ${fmt(booking.start)} to ${fmt(booking.end)}. ${booking.address}. ${money(booking.total)}.`;
+    document.getElementById("sendBooking").hidden = false;
+    document.getElementById("editBooking").textContent = "Edit";
     document.getElementById("modal").classList.add("on");
+    document.getElementById("sendBooking").onclick = () => sendBooking(booking);
   };
-  document.getElementById("close").onclick = () => document.getElementById("modal").classList.remove("on");
+  document.getElementById("editBooking").onclick = () => document.getElementById("modal").classList.remove("on");
+}
+let sending = false;
+async function sendBooking(booking) {
+  if (sending) return;
+  sending = true;
+  const button = document.getElementById("sendBooking");
+  button.disabled = true;
+  button.textContent = "Booking…";
+  let apple = "Added to the Family calendar.";
+  try {
+    const response = await fetch("/api/book", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(booking) });
+    const data = await response.json();
+    apple = data.saved ? "Booked. A confirmation email is on its way." : data.error;
+    if (data.manage) apple += " Manage: " + data.manage;
+  } catch (err) {
+    apple = "The booking did not send. Please try once.";
+  }
+  document.getElementById("modalTitle").textContent = "Booked";
+  document.getElementById("confirm").textContent = `${booking.name}, ${booking.home} on ${booking.date}, ${fmt(booking.start)} to ${fmt(booking.end)}. ${apple}`;
+  button.hidden = true;
+  document.getElementById("editBooking").textContent = "Done";
+  sending = false;
 }
 init();
