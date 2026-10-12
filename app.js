@@ -383,31 +383,28 @@ async function sendBooking(booking) {
   if (sending) return;
   sending = true;
   const button = document.getElementById("sendBooking");
-  button.disabled = true;
-  button.textContent = "Saving…";
-  document.getElementById("modalTitle").textContent = "Saving your visit";
-  document.getElementById("confirm").textContent = "One moment. Do not close this window.";
+  button.hidden = true;
+  document.getElementById("modalTitle").textContent = "Booked";
+  document.getElementById("confirm").textContent = `${booking.name}, your ${booking.home} visit is booked for ${booking.date}, ${fmt(booking.start)} to ${fmt(booking.end)}. A confirmation email is on its way.`;
+  document.getElementById("editBooking").textContent = "Done";
   fetch("/api/book", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(booking) })
     .then(r => r.json().catch(() => ({ saved: false, error: "The server did not answer." })))
     .then(data => {
-      if (data.saved) {
-        document.getElementById("modalTitle").textContent = "Booked";
-        document.getElementById("confirm").innerHTML = `${booking.name}, your ${booking.home} visit is booked for ${booking.date}, ${fmt(booking.start)} to ${fmt(booking.end)}.<br>A confirmation email is on its way.${data.manage ? `<br><a href="${data.manage}">Manage this appointment</a>` : ""}`;
-        document.getElementById("editBooking").textContent = "Done";
-      } else {
+      if (!data.saved) {
         document.getElementById("modalTitle").textContent = "Not booked";
-        document.getElementById("confirm").textContent = "This visit was not saved. Tap Edit and try again, or call or text 346-833-5791.";
-        document.getElementById("editBooking").textContent = "Edit";
+        document.getElementById("confirm").textContent = "This visit was not saved. Tap Try again, or call or text 346-833-5791.";
+        document.getElementById("editBooking").textContent = "Close";
         button.hidden = false;
         button.disabled = false;
         button.textContent = "Try again";
         button.onclick = () => sendBooking(booking);
+        return;
       }
+      if (data.manage) document.getElementById("confirm").innerHTML += `<br><a href="${data.manage}">Manage this appointment</a>`;
     })
     .catch(() => {
       document.getElementById("modalTitle").textContent = "Not booked";
-      document.getElementById("confirm").textContent = "We could not reach the booking service. Check your connection, then tap Try again, or call 346-833-5791.";
-      document.getElementById("editBooking").textContent = "Edit";
+      document.getElementById("confirm").textContent = "We could not reach the booking service. Tap Try again, or call 346-833-5791.";
       button.hidden = false;
       button.disabled = false;
       button.textContent = "Try again";
