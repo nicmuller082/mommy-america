@@ -258,6 +258,10 @@ function renderQuote() {
   document.getElementById("bathNote").textContent = `${q.home.baths} bathroom${q.home.baths > 1 ? "s" : ""} included. Each extra bathroom is $20.`;
 }
 
+function setLoading(on) {
+  const box = document.getElementById("loadingTimes");
+  if (box) box.hidden = !on;
+}
 async function firstOpenDay(q) {
   for (const date of nextWeekdays(8)) {
     await loadApple(date);
@@ -272,10 +276,11 @@ function showAvailability() {
   const area = areaFor(document.getElementById("zip").value);
   const suburb = document.getElementById("suburb");
   if (suburb && area && !suburb.value) suburb.value = area.name;
+  setLoading(true);
   firstOpenDay(quote()).then(date => {
     document.getElementById("day").value = date;
     return loadApple(date);
-  }).then(renderQuote);
+  }).then(() => { setLoading(false); renderQuote(); });
   document.getElementById("availability").scrollIntoView({ behavior: "smooth" });
 }
 function init() {
@@ -294,7 +299,9 @@ function init() {
     if (!date) return;
     document.getElementById("day").value = date;
     document.getElementById("start").value = "";
+    setLoading(true);
     await loadApple(date);
+    setLoading(false);
     renderQuote();
   });
   document.getElementById("dayboard")?.addEventListener("click", e => {
@@ -325,7 +332,7 @@ function init() {
       date: document.getElementById("day").value,
       start,
       end: start + q.minutes,
-      notes: document.getElementById("notes").value,
+      notes: "",
       extras: q.lines.map(l => l.name).join(", "),
       home: q.home.name,
       kind: kinds.find(k => k.id === q.kind).name,
