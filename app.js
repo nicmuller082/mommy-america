@@ -109,6 +109,14 @@ function priceFor(home, kind, freq) {
   return card[freq];
 }
 
+function fullAddress() {
+  const house = document.getElementById("house")?.value.trim() || "";
+  const street = document.getElementById("street")?.value.trim() || "";
+  const apt = document.getElementById("apt")?.value.trim() || "";
+  const suburb = document.getElementById("suburb")?.value.trim() || "";
+  const zip = document.getElementById("zip")?.value.trim() || "";
+  return [house, street, apt && `Apt ${apt}`, suburb, zip].filter(Boolean).join(", ");
+}
 function quote() {
   const home = selectedHome();
   const freq = selectedFreq();
