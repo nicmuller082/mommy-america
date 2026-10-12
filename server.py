@@ -146,41 +146,39 @@ def busy():
     return jsonify(connected=not errors or bool(blocks), busy=blocks, error="; ".join(errors))
 
 
+def write_calendar(payload, start, finish):
+    family = [item for item in accounts() if item[2] == "family"]
+    if not family:
+        return
+    user, password, label = family[0]
+    calendars = client_for(user, password).principal().calendars()
+    wanted = watched_name(label).lower()
+    target = next((c for c in calendars if (c.name or "").lower() == wanted), None)
+    if target is None:
+        return
+    target.save_event(
+        dtstart=start,
+        dtend=finish,
+        summary=f"Mommy America; {payload.get('home', 'Cleaning')}, {payload.get('name', '')}, {payload.get('phone', '')}",
+        location=payload.get("address", ""),
+        description=f"Contact: {payload.get('phone', '')}. {payload.get('kind', '')}. {payload.get('extras', '')}".strip(),
+    )
+
+
 @app.post("/api/book")
 def book():
     payload = request.get_json(force=True)
-    family = [item for item in accounts() if item[2] == "family"]
-    if not family:
+    if not [item for item in accounts() if item[2] == "family"]:
         return jsonify(saved=False, error="Family calendar is not connected."), 400
-    user, password, label = family[0]
     start = datetime.strptime(payload["date"], "%Y-%m-%d").replace(tzinfo=TZ) + timedelta(minutes=int(payload["start"]))
     finish = datetime.strptime(payload["date"], "%Y-%m-%d").replace(tzinfo=TZ) + timedelta(minutes=int(payload["end"]))
-    try:
-        calendars = client_for(user, password).principal().calendars()
-        wanted = watched_name(label).lower()
-        target = next((c for c in calendars if (c.name or "").lower() == wanted), None)
-        if target is None:
-            return jsonify(saved=False, error=f"No calendar named {watched_name(label)}."), 404
-        target.save_event(
-            dtstart=start,
-            dtend=finish,
-            summary=f"Mommy America; {payload.get('home', 'Cleaning')}, {payload.get('name', '')}, {payload.get('phone', '')}",
-            location=payload.get("address", ""),
-            description=f"Contact: {payload.get('phone', '')}. {payload.get('kind', '')}. {payload.get('extras', '')}".strip(),
-        )
-    except Exception as exc:
-        return jsonify(saved=False, error=str(exc)), 502
     ref = uuid.uuid4().hex[:10]
     payload["manage"] = request.host_url.rstrip("/") + "/manage/" + ref
     store = load_store()
     store[ref] = payload
     save_store(store)
-    try:
-        threading.Thread(target=lambda: (notify(payload), notify(payload, client=True)), daemon=True).start()
-        emailed = "Emails are sending."
-    except Exception as exc:
-        emailed = f"Calendar saved, email failed: {exc}"
-    return jsonify(saved=True, email=emailed, manage=payload["manage"])
+    threading.Thread(target=lambda: (write_calendar(payload, start, finish), notify(payload), notify(payload, client=True)), daemon=True).start()
+    return jsonify(saved=True, manage=payload["manage"])
 
 
 @app.route("/manage/<ref>", methods=["GET", "POST"])

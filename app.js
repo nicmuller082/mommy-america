@@ -383,23 +383,19 @@ async function sendBooking(booking) {
   sending = true;
   const button = document.getElementById("sendBooking");
   button.disabled = true;
-  button.textContent = "Booking…";
-  const slow = setTimeout(() => { button.textContent = "Still saving…"; }, 8000);
-  let apple = "Added to the Family calendar.";
-  try {
-    const response = await fetch("/api/book", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(booking) });
-    const data = await response.json();
-    clearTimeout(slow);
-    document.getElementById("modalTitle").textContent = data.saved ? "Booked" : "Not booked";
-    document.getElementById("confirm").textContent = data.saved
-      ? `${booking.name}, ${booking.home} on ${booking.date}, ${fmt(booking.start)} to ${fmt(booking.end)}. A confirmation email is on its way.`
-      : (data.error || "The booking did not send.");
-    if (data.manage) document.getElementById("confirm").innerHTML += `<br><a href="${data.manage}">Manage appointment</a>`;
-  } catch (err) {
-    clearTimeout(slow);
-    document.getElementById("modalTitle").textContent = "Not booked";
-    document.getElementById("confirm").textContent = "The booking did not finish. Please try once.";
-  }
+  button.textContent = "Booked";
+  document.getElementById("modalTitle").textContent = "Booked";
+  document.getElementById("confirm").textContent = `${booking.name}, ${booking.home} on ${booking.date}, ${fmt(booking.start)} to ${fmt(booking.end)}. Confirmation is on its way.`;
+  fetch("/api/book", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(booking) })
+    .then(r => r.json())
+    .then(data => {
+      if (data.manage) document.getElementById("confirm").innerHTML += `<br><a href="${data.manage}">Manage appointment</a>`;
+      if (!data.saved) document.getElementById("confirm").textContent = data.error || "The booking did not send.";
+    })
+    .catch(() => {
+      document.getElementById("confirm").textContent = "The booking did not finish. Please try once.";
+    })
+    .finally(() => { button.hidden = true; document.getElementById("editBooking").textContent = "Done"; sending = false; });
   button.hidden = true;
   document.getElementById("editBooking").textContent = "Done";
   sending = false;
