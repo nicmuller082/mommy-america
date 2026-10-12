@@ -258,6 +258,9 @@ function showAvailability() {
   document.getElementById("availability").hidden = false;
   document.getElementById("bookingFields").hidden = false;
   document.getElementById("confirmQuote").hidden = true;
+  const area = areaFor(document.getElementById("zip").value);
+  const suburb = document.getElementById("suburb");
+  if (suburb && area && !suburb.value) suburb.value = area.name;
   if (!document.getElementById("day").value) document.getElementById("day").value = nextWeekdays(1)[0];
   loadApple(document.getElementById("day").value).then(renderQuote);
   document.getElementById("availability").scrollIntoView({ behavior: "smooth" });
