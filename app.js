@@ -257,6 +257,7 @@ function init() {
   document.getElementById("kind").innerHTML = kinds.map(k => `<option value="${k.id}">${k.name}</option>`).join("");
   document.getElementById("freq").innerHTML = freqs.map(f => `<option value="${f.id}" ${f.id === "biweekly" ? "selected" : ""}>${f.name}</option>`).join("");
   renderQuote();
+  document.getElementById("confirmQuote").onclick = showAvailability;
   document.getElementById("zip")?.addEventListener("input", renderQuote);
   document.getElementById("week")?.addEventListener("click", async e => {
     const date = e.target.dataset.date;
