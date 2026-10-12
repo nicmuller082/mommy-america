@@ -148,9 +148,9 @@ def book():
         target.save_event(
             dtstart=start,
             dtend=finish,
-            summary=f"Mommy America; {payload.get('home', 'Cleaning')}, {payload.get('name', '')}",
+            summary=f"Mommy America; {payload.get('home', 'Cleaning')}, {payload.get('name', '')}, {payload.get('phone', '')}",
             location=payload.get("address", ""),
-            description=f"{payload.get('kind', '')}. {payload.get('phone', '')}. {payload.get('extras', '')}".strip(),
+            description=f"Contact: {payload.get('phone', '')}. {payload.get('kind', '')}. {payload.get('extras', '')}".strip(),
         )
     except Exception as exc:
         return jsonify(saved=False, error=str(exc)), 502
