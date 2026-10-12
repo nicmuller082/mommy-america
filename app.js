@@ -292,6 +292,12 @@ async function firstOpenDay(q) {
   return nextWeekdays(1)[0];
 }
 function showAvailability() {
+  const zip = document.getElementById("zip").value.replace(/\D/g, "");
+  if (zip.length !== 5) {
+    document.getElementById("areaFlag").textContent = "Enter a 5-digit ZIP code to continue.";
+    document.getElementById("zip").focus();
+    return;
+  }
   document.getElementById("availability").hidden = false;
   document.getElementById("bookingFields").hidden = false;
   document.getElementById("confirmQuote").hidden = true;
