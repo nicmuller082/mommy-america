@@ -1,4 +1,4 @@
-import json
+import threading
 import os
 import smtplib
 import uuid
@@ -107,7 +107,7 @@ def notify(payload, client=False):
         f"Total: {payload.get('total')}",
         f"Manage or change this booking: {manage}",
     ]))
-    with smtplib.SMTP(host, int(os.environ.get("SMTP_PORT", "587"))) as smtp:
+    with smtplib.SMTP(host, int(os.environ.get("SMTP_PORT", "587")), timeout=12) as smtp:
         smtp.starttls()
         smtp.login(user, password)
         smtp.send_message(message)
@@ -176,8 +176,8 @@ def book():
     store[ref] = payload
     save_store(store)
     try:
-        emailed = notify(payload)
-        notify(payload, client=True)
+        threading.Thread(target=lambda: (notify(payload), notify(payload, client=True)), daemon=True).start()
+        emailed = "Emails are sending."
     except Exception as exc:
         emailed = f"Calendar saved, email failed: {exc}"
     return jsonify(saved=True, email=emailed, manage=payload["manage"])

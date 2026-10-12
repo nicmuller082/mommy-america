@@ -384,17 +384,22 @@ async function sendBooking(booking) {
   const button = document.getElementById("sendBooking");
   button.disabled = true;
   button.textContent = "Booking…";
+  const slow = setTimeout(() => { button.textContent = "Still saving…"; }, 8000);
   let apple = "Added to the Family calendar.";
   try {
     const response = await fetch("/api/book", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(booking) });
     const data = await response.json();
-    apple = data.saved ? "Booked. A confirmation email is on its way." : data.error;
-    if (data.manage) apple += " Manage: " + data.manage;
+    clearTimeout(slow);
+    document.getElementById("modalTitle").textContent = data.saved ? "Booked" : "Not booked";
+    document.getElementById("confirm").textContent = data.saved
+      ? `${booking.name}, ${booking.home} on ${booking.date}, ${fmt(booking.start)} to ${fmt(booking.end)}. A confirmation email is on its way.`
+      : (data.error || "The booking did not send.");
+    if (data.manage) document.getElementById("confirm").innerHTML += `<br><a href="${data.manage}">Manage appointment</a>`;
   } catch (err) {
-    apple = "The booking did not send. Please try once.";
+    clearTimeout(slow);
+    document.getElementById("modalTitle").textContent = "Not booked";
+    document.getElementById("confirm").textContent = "The booking did not finish. Please try once.";
   }
-  document.getElementById("modalTitle").textContent = "Booked";
-  document.getElementById("confirm").textContent = `${booking.name}, ${booking.home} on ${booking.date}, ${fmt(booking.start)} to ${fmt(booking.end)}. ${apple}`;
   button.hidden = true;
   document.getElementById("editBooking").textContent = "Done";
   sending = false;
