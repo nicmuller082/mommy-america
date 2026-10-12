@@ -228,7 +228,7 @@ function renderQuote() {
     <div class="line"><span>${freqName}</span><span>${durationLabel(q.minutes)}</span></div>
     ${document.getElementById("name")?.value ? `<div class="line"><span>${document.getElementById("name").value}</span><span>${document.getElementById("phone").value}</span></div>` : ""}
     ${document.getElementById("email")?.value ? `<div class="line"><span>${document.getElementById("email").value}</span><span></span></div>` : ""}
-    ${document.getElementById("address")?.value ? `<div class="line"><span>${document.getElementById("address").value}</span><span></span></div>` : ""}
+    ${fullAddress() ? `<div class="line"><span>${fullAddress()}</span><span></span></div>` : ""}
     ${pricedAs}
     <div class="line"><span>${q.home.baths} bathroom${q.home.baths > 1 ? "s" : ""} included</span><span>in the price</span></div>
     <div class="line"><span>Extra bathrooms</span><span>${state.baths ? state.baths + " · " + money(state.baths * 20) : "—"}</span></div>
@@ -241,6 +241,8 @@ function renderQuote() {
   if (flag) {
     flag.innerHTML = q.area ? `<span class="badge ${q.area.ok ? "in" : "out"}">${q.area.ok ? "In area" : "Out of area"}</span> ${q.area.note}` : "Enter the ZIP to confirm the area.";
   }
+  const suburb = document.getElementById("suburb");
+  if (suburb && q.area) suburb.value = q.area.name;
   document.getElementById("bathNote").textContent = `${q.home.baths} bathroom${q.home.baths > 1 ? "s" : ""} included. Each extra bathroom is $20.`;
 }
 

@@ -30,10 +30,13 @@
       <p class="fine" id="areaFlag">Enter the ZIP to confirm the area.</p>
       <button class="btn" type="button" id="confirmQuote">Confirm and see times</button>
       <div id="bookingFields" hidden>
-        <label>Name and surname<input id="name" required placeholder="Name and surname" /></label>
+        <label>Name and surname<input id="name" placeholder="Name and surname" /></label>
         <label>Contact number<input id="phone" required placeholder="346-833-5791" /></label>
         <label>Email<input id="email" type="email" required placeholder="you@email.com" /></label>
-        <label>Street address<input id="address" required placeholder="Street and neighborhood" /></label>
+        <div class="two"><label>House number<input id="house" placeholder="21650" /></label><label>Apt<input id="apt" placeholder="3320" /></label></div>
+        <label>Street address<input id="street" required placeholder="FM 1093" /></label>
+        <label>Suburb<input id="suburb" readonly /></label>
+        <input id="address" type="hidden" />
         <input id="day" type="hidden" />
         <input id="start" type="hidden" />
         <button class="btn" type="submit">Book this visit</button>
