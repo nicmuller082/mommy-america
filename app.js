@@ -121,6 +121,9 @@ function quote() {
   const home = selectedHome();
   const freq = selectedFreq();
   const kind = selectedKind();
+  if (!home || !freq || !kind) {
+    return { home: { name: "Select a visit", baths: 0 }, freq, kind, price: 0, lines: [], minutes: 0, leaveBy: HARD_LEAVE, zone: { drive: 12, ok: true }, zoneNote: "Choose the home, cleaning, and schedule.", area: null };
+  }
   const area = areaFor(document.getElementById("zip")?.value);
   const zone = area?.ok === false ? { name: area.name, drive: 25, ok: false } : { name: area?.name || "Local", drive: 12, ok: true };
   let price = priceFor(home, kind, freq) + state.baths * 20;
@@ -224,8 +227,8 @@ function renderAddons() {
 }
 function renderQuote() {
   const q = quote();
-  const kindName = kinds.find(k => k.id === q.kind).name;
-  const freqName = freqs.find(f => f.id === q.freq).name;
+  const kindName = kinds.find(k => k.id === q.kind)?.name || "Select the cleaning";
+  const freqName = freqs.find(f => f.id === q.freq)?.name || "Select the schedule";
   const pricedAs = q.kind === "standard" ? "" : `<div class="line"><span>Priced from the deep card</span><span></span></div>`;
   fillStarts(q);
   if (!document.getElementById("availability").hidden) renderBoard(q);
@@ -269,9 +272,9 @@ function init() {
   if (document.getElementById("standardBody")) renderTables();
   if (document.getElementById("addonList") || document.getElementById("addonChecks")) renderAddons();
   if (!document.getElementById("quoteForm")) return;
-  document.getElementById("home").innerHTML = homes.map(h => `<option value="${h.id}" ${h.id === "32" ? "selected" : ""}>${h.name}</option>`).join("");
-  document.getElementById("kind").innerHTML = kinds.map(k => `<option value="${k.id}">${k.name}</option>`).join("");
-  document.getElementById("freq").innerHTML = freqs.map(f => `<option value="${f.id}" ${f.id === "biweekly" ? "selected" : ""}>${f.name}</option>`).join("");
+  document.getElementById("home").innerHTML = `<option value="">Select your home size</option>` + homes.map(h => `<option value="${h.id}">${h.name}</option>`).join("");
+  document.getElementById("kind").innerHTML = `<option value="">Select the cleaning</option>` + kinds.map(k => `<option value="${k.id}">${k.name}</option>`).join("");
+  document.getElementById("freq").innerHTML = `<option value="">Select the schedule</option>` + freqs.map(f => `<option value="${f.id}">${f.name}</option>`).join("");
   renderQuote();
   document.getElementById("confirmQuote").onclick = showAvailability;
   document.getElementById("zip")?.addEventListener("input", renderQuote);
