@@ -370,7 +370,7 @@ function init() {
       total: q.price
     };
     document.getElementById("modalTitle").textContent = "Confirm this visit";
-    document.getElementById("confirm").textContent = `${booking.name}, ${booking.home}, ${booking.kind}, ${booking.date}, ${fmt(booking.start)} to ${fmt(booking.end)}. ${booking.address}. ${money(booking.total)}.`;
+    document.getElementById("confirm").textContent = `${booking.name}, ${booking.home}, ${booking.kind}, ${booking.freq}, ${booking.date}, ${fmt(booking.start)} to ${fmt(booking.end)}. ${booking.address}. ${money(booking.total)}.`;
     document.getElementById("sendBooking").hidden = false;
     document.getElementById("editBooking").textContent = "Edit";
     document.getElementById("modal").classList.add("on");
@@ -385,7 +385,7 @@ async function sendBooking(booking) {
   const button = document.getElementById("sendBooking");
   button.hidden = true;
   document.getElementById("modalTitle").textContent = "Booked";
-  document.getElementById("confirm").textContent = `${booking.name}, your ${booking.home} visit is booked for ${booking.date}, ${fmt(booking.start)} to ${fmt(booking.end)}. A confirmation email is on its way.`;
+  document.getElementById("confirm").textContent = `${booking.name}, your ${booking.freq.toLowerCase()} ${booking.home} visit is booked for ${booking.date}, ${fmt(booking.start)} to ${fmt(booking.end)}. A confirmation email is on its way.`;
   document.getElementById("editBooking").textContent = "Done";
   fetch("/api/book", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(booking) })
     .then(r => r.json().catch(() => ({ saved: false, error: "The server did not answer." })))
