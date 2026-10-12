@@ -16,14 +16,16 @@
     <h1>Choose the visit.</h1>
     <p class="lede">Pick the home, the clean, and any extras. Confirm the price, then choose a time.</p>
   </section>
-  <section class="split">
+  <section class="booking">
     <form id="quoteForm" class="panel">
       <div class="two"><label>Home<select id="home"></select></label><label>Service<select id="kind"></select></label></div>
       <label>How often<select id="freq"></select></label>
       <div class="row"><span>Extra bathrooms <span class="fine" id="bathNote"></span></span><span class="stepper"><button type="button" id="bathMinus">−</button> <b id="baths">0</b> <button type="button" id="bathPlus">+</button></span></div>
       <label class="check"><input type="checkbox" id="ownSupplies" /> She brings the supplies (+$10)</label>
-      <p class="fine">Extra services</p>
-      <div class="checks" id="addonChecks"></div>
+      <details class="extras">
+        <summary>Extra services</summary>
+        <div class="checks" id="addonChecks"></div>
+      </details>
       <button class="btn" type="button" id="confirmQuote">Confirm and see times</button>
       <div id="bookingFields" hidden>
         <div class="two"><label>Name<input id="name" placeholder="Your name" /></label><label>Phone<input id="phone" placeholder="346-833-5791" /></label></div>
