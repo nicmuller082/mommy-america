@@ -305,6 +305,8 @@ function showAvailability() {
   const area = areaFor(document.getElementById("zip").value);
   const suburb = document.getElementById("suburb");
   if (suburb && area && !suburb.value) suburb.value = area.name;
+  document.getElementById("week").innerHTML = "";
+  document.getElementById("dayboard").innerHTML = "";
   setLoading(true);
   firstOpenDay(quote()).then(date => {
     document.getElementById("day").value = date;
