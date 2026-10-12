@@ -81,6 +81,7 @@ def notify(payload):
     message.set_content("\n".join([
         f"Name: {payload.get('name')}",
         f"Phone: {payload.get('phone')}",
+        f"Email: {payload.get('email')}",
         f"Address: {payload.get('address')}",
         f"Home: {payload.get('home')}",
         f"Service: {payload.get('kind')}",

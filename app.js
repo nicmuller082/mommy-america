@@ -224,8 +224,11 @@ function renderQuote() {
   document.getElementById("summary").innerHTML = `
     <p class="script" style="font-size:28px;margin:0">Your visit</p>
     <h3>${money(q.price)}</h3>
-    <div class="line"><span>${q.home.name}</span><span></span></div>
-    <div class="line"><span>${kindName}</span><span>${freqName}</span></div>
+    <div class="line"><span>${q.home.name}</span><span>${kindName}</span></div>
+    <div class="line"><span>${freqName}</span><span>${durationLabel(q.minutes)}</span></div>
+    ${document.getElementById("name")?.value ? `<div class="line"><span>${document.getElementById("name").value}</span><span>${document.getElementById("phone").value}</span></div>` : ""}
+    ${document.getElementById("email")?.value ? `<div class="line"><span>${document.getElementById("email").value}</span><span></span></div>` : ""}
+    ${document.getElementById("address")?.value ? `<div class="line"><span>${document.getElementById("address").value}</span><span></span></div>` : ""}
     ${pricedAs}
     <div class="line"><span>${q.home.baths} bathroom${q.home.baths > 1 ? "s" : ""} included</span><span>in the price</span></div>
     <div class="line"><span>Extra bathrooms</span><span>${state.baths ? state.baths + " · " + money(state.baths * 20) : "—"}</span></div>
@@ -289,6 +292,7 @@ function init() {
     const booking = {
       name: document.getElementById("name").value,
       phone: document.getElementById("phone").value,
+      email: document.getElementById("email").value,
       address: document.getElementById("address").value,
       date: document.getElementById("day").value,
       start,
