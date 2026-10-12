@@ -1,5 +1,5 @@
 :root { --navy:#16315f; --ink:#1c2838; --pink:#e23b78; --line:#e6e1e4; --muted:#5e6a78; --paper:#fff; --bg:#f6f7f9; }
-* { box-sizing:border-box; }
+[hidden] { display: none !important; }
 html { scroll-behavior:smooth; }
 body { margin:0; color:var(--ink); background:var(--bg); font-family:Outfit, "Segoe UI", sans-serif; line-height:1.5; }
 img { max-width:100%; display:block; }

@@ -396,6 +396,7 @@ async function sendBooking(booking) {
   sending = true;
   const button = document.getElementById("sendBooking");
   button.hidden = true;
+  button.disabled = true;
   document.getElementById("modalTitle").textContent = "Booked";
   document.getElementById("confirm").textContent = `${booking.name}, your ${booking.freq.toLowerCase()} ${booking.home} visit is booked for ${booking.date}, ${fmt(booking.start)} to ${fmt(booking.end)}. A confirmation email is on its way.`;
   document.getElementById("editBooking").textContent = "Done";
@@ -422,6 +423,6 @@ async function sendBooking(booking) {
       button.textContent = "Try again";
       button.onclick = () => sendBooking(booking);
     })
-    .finally(() => { sending = false; });
+    .finally(() => { if (document.getElementById("modalTitle").textContent !== "Booked") sending = false; });
 }
 init();
