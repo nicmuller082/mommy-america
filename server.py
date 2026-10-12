@@ -87,7 +87,20 @@ def save_store(data):
     STORE.write_text(json.dumps(data))
 
 
-def notify(payload, client=False):
+def send_message(message):
+    host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+    user = os.environ.get("SMTP_USER")
+    password = os.environ.get("SMTP_PASSWORD")
+    port = int(os.environ.get("SMTP_PORT", "465"))
+    if port == 465:
+        with smtplib.SMTP_SSL(host, port, timeout=15) as smtp:
+            smtp.login(user, password)
+            smtp.send_message(message)
+        return
+    with smtplib.SMTP(host, port, timeout=15) as smtp:
+        smtp.starttls()
+        smtp.login(user, password)
+        smtp.send_message(message)
     host = os.environ.get("SMTP_HOST")
     user = os.environ.get("SMTP_USER")
     password = os.environ.get("SMTP_PASSWORD")
@@ -111,10 +124,7 @@ def notify(payload, client=False):
         f"Total: {payload.get('total')}",
         f"Manage or change this booking: {manage}",
     ]))
-    with smtplib.SMTP(host, int(os.environ.get("SMTP_PORT", "587")), timeout=12) as smtp:
-        smtp.starttls()
-        smtp.login(user, password)
-        smtp.send_message(message)
+    send_message(message)
     return "Email sent."
 
 
@@ -225,10 +235,7 @@ def invoice_email(payload, start, finish):
     message.set_content(f"Thank you. Your {payload.get('freq')} visit is booked for {when}. Total ${payload.get('total')}.")
     message.add_alternative(html, subtype="html")
     message.add_attachment(ics_for(payload, start, finish).encode(), maintype="text", subtype="calendar", filename="mommy-america-visit.ics")
-    with smtplib.SMTP(host, int(os.environ.get("SMTP_PORT", "587")), timeout=12) as smtp:
-        smtp.starttls()
-        smtp.login(user, password)
-        smtp.send_message(message)
+    send_message(message)
 
 
 def write_calendar(payload, start, finish):
