@@ -321,13 +321,7 @@ function init() {
   document.getElementById("kind").innerHTML = `<option value="">Select the cleaning</option>` + kinds.map(k => `<option value="${k.id}">${k.name}</option>`).join("");
   document.getElementById("freq").innerHTML = `<option value="">Select the schedule</option>` + freqs.map(f => `<option value="${f.id}">${f.name}</option>`).join("");
   renderQuote();
-  document.getElementById("useTime").onclick = () => {
-    const area = areaFor(document.getElementById("zip").value);
-    const suburb = document.getElementById("suburb");
-    if (suburb && area && !suburb.value) suburb.value = area.name;
-    document.getElementById("details").hidden = false;
-    document.getElementById("details").scrollIntoView({ behavior: "smooth" });
-  };
+  document.getElementById("confirmQuote").onclick = showAvailability;
   document.getElementById("zip")?.addEventListener("input", renderQuote);
   document.getElementById("week")?.addEventListener("click", async e => {
     const button = e.target.closest("button");
