@@ -349,9 +349,12 @@ function init() {
   document.getElementById("bathMinus").onclick = () => { state.baths = Math.max(0, state.baths - 1); document.getElementById("baths").textContent = state.baths; renderQuote(); };
   document.getElementById("quoteForm").onsubmit = async e => {
     e.preventDefault();
+    const missing = ["name", "phone", "email", "street"].find(id => !document.getElementById(id).value.trim());
+    if (missing) return alert("Name, contact number, email, and street address are required.");
+    document.getElementById("address").value = fullAddress();
     const q = quote();
     const start = Number(document.getElementById("start").value);
-    if (!document.getElementById("day").value || !start) return alert("Pick a weekday and a start time that ends before she has to leave.");
+    if (!document.getElementById("day").value || !start) return alert("Tap an open time before booking.");
     const booking = {
       name: document.getElementById("name").value,
       phone: document.getElementById("phone").value,
