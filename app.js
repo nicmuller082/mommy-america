@@ -173,8 +173,8 @@ function renderBoard(q) {
   board.innerHTML = booked + open;
 }
 function fillStarts(q) {
-  const date = document.getElementById("day").value;
   const select = document.getElementById("start");
+  if (!select || select.tagName !== "SELECT") return;
   const previous = select.value;
   const weekday = date ? new Date(date + "T12:00:00").getDay() : 1;
   if (date && (weekday === 0 || weekday === 6)) {
