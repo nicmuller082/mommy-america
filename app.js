@@ -301,7 +301,6 @@ function showAvailability() {
     return;
   }
   document.getElementById("availability").hidden = false;
-  document.getElementById("bookingFields").hidden = false;
   document.getElementById("confirmQuote").hidden = true;
   const area = areaFor(document.getElementById("zip").value);
   const suburb = document.getElementById("suburb");
