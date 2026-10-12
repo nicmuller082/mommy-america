@@ -1,9 +1,10 @@
 import json
-import uuid
-from pathlib import Path
+import os
 import smtplib
+import uuid
 from datetime import datetime, timedelta, date
 from email.message import EmailMessage
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from flask import Flask, jsonify, request, send_from_directory
@@ -105,34 +106,6 @@ def notify(payload, client=False):
         f"Time: {payload.get('start')} to {payload.get('end')}",
         f"Total: {payload.get('total')}",
         f"Manage or change this booking: {manage}",
-    ]))
-    with smtplib.SMTP(host, int(os.environ.get("SMTP_PORT", "587"))) as smtp:
-        smtp.starttls()
-        smtp.login(user, password)
-        smtp.send_message(message)
-    return "Email sent."
-    host = os.environ.get("SMTP_HOST")
-    user = os.environ.get("SMTP_USER")
-    password = os.environ.get("SMTP_PASSWORD")
-    to = os.environ.get("BOOKING_EMAIL", user)
-    if not (host and user and password and to):
-        return "Email is not set up yet."
-    message = EmailMessage()
-    message["Subject"] = f"New booking · {payload.get('date')} {payload.get('start')}"
-    message["From"] = user
-    message["To"] = to
-    message.set_content("\n".join([
-        f"Name: {payload.get('name')}",
-        f"Phone: {payload.get('phone')}",
-        f"Email: {payload.get('email')}",
-        f"Address: {payload.get('address')}",
-        f"Home: {payload.get('home')}",
-        f"Service: {payload.get('kind')}",
-        f"Date: {payload.get('date')}",
-        f"Start minute: {payload.get('start')}",
-        f"End minute: {payload.get('end')}",
-        f"Total: {payload.get('total')}",
-        f"Notes: {payload.get('notes')}",
     ]))
     with smtplib.SMTP(host, int(os.environ.get("SMTP_PORT", "587"))) as smtp:
         smtp.starttls()
