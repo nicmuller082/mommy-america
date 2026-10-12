@@ -225,6 +225,9 @@ def invoice_email(payload, start, finish):
         smtp.starttls()
         smtp.login(user, password)
         smtp.send_message(message)
+
+
+def write_calendar(payload, start, finish):
     family = [item for item in accounts() if item[2] == "family"]
     if not family:
         return
@@ -239,7 +242,8 @@ def invoice_email(payload, start, finish):
         dtend=finish,
         summary=f"Mommy America; {payload.get('home', 'Cleaning')}, {payload.get('name', '')}, {payload.get('phone', '')}",
         location=payload.get("address", ""),
-        description=f"Contact: {payload.get('phone', '')}. {payload.get('kind', '')}. {payload.get('extras', '')}".strip(),
+        description=f"Contact: {payload.get('phone', '')}. {payload.get('kind', '')}. {payload.get('freq', '')}. {payload.get('extras', '')}".strip(),
+        rrule=RULES.get(payload.get("freq", "")),
     )
 
 
