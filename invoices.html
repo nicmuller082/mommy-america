@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Mommy America · Invoices</title>
+<style>
+:root { --navy:#16315f; --pink:#e23b78; --ink:#1c2838; --muted:#5e6a78; --line:#e6e1e4; --bg:#f6f7f9; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+header { background:var(--navy); color:#fff; padding:16px 18px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:5; }
+header h1 { margin:0; font-size:18px; font-weight:650; }
+header span { color:var(--pink); }
+button, input, select, textarea { font:inherit; }
+.tabs { display:flex; background:#fff; border-bottom:1px solid var(--line); }
+.tabs button { flex:1; border:0; background:transparent; padding:14px; color:var(--muted); }
+.tabs button.on { color:var(--navy); border-bottom:2px solid var(--pink); font-weight:650; }
+main { padding:16px; max-width:640px; margin:0 auto; }
+.card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; margin-bottom:12px; }
+.row { display:flex; justify-content:space-between; gap:10px; align-items:center; }
+label { display:block; font-size:13px; color:var(--muted); margin:8px 0; }
+input, select, textarea { width:100%; margin-top:4px; border:1px solid var(--line); border-radius:10px; padding:12px; font-size:16px; }
+.two { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.btn { border:0; border-radius:10px; padding:12px 14px; background:var(--pink); color:#fff; font-weight:650; width:100%; }
+.ghost { background:#fff; color:var(--navy); border:1px solid var(--line); }
+.small { width:auto; padding:8px 12px; font-size:14px; }
+.client { display:flex; justify-content:space-between; align-items:center; }
+.client b { display:block; }
+.fine { color:var(--muted); font-size:13px; }
+.extra { display:grid; grid-template-columns:1fr 90px 36px; gap:8px; align-items:center; margin-bottom:8px; }
+.extra input { margin:0; }
+.total { font-size:22px; color:var(--navy); font-weight:700; }
+.invoice { background:#fff; border-radius:16px; overflow:hidden; border:1px solid var(--line); }
+.inv-head { background:var(--navy); color:#fff; padding:22px 20px 18px; }
+.brand { font-family:Georgia, "Times New Roman", serif; font-size:26px; letter-spacing:-.02em; }
+.brand span { color:var(--pink); }
+.tag { opacity:.85; font-size:13px; margin-top:2px; }
+.inv-meta { display:flex; justify-content:space-between; margin-top:14px; font-size:13px; }
+.inv-body { padding:18px 18px 8px; }
+.billto { background:#f6f7f9; border-radius:10px; padding:12px; margin-bottom:12px; }
+.billto b { color:var(--navy); }
+.line { display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line); font-size:14px; }
+.grand { display:flex; justify-content:space-between; padding:14px 0 6px; font-size:18px; font-weight:700; color:var(--navy); }
+.inv-foot { background:#f6f7f9; padding:14px 18px; font-size:13px; color:var(--muted); display:flex; justify-content:space-between; }
+@media print { header, .tabs, .two { display:none !important; } main { padding:0; } body { background:#fff; } }
+.hidden { display:none !important; }
+</style>
+</head>
+<body>
+<header><h1>Mommy <span>America</span></h1><button class="btn small" id="newInvoice" style="width:auto">New invoice</button></header>
+<div class="tabs">
+  <button class="on" data-tab="clients">Clients</button>
+  <button data-tab="invoice">Invoice</button>
+  <button data-tab="preview">Preview</button>
+</div>
+<main>
+  <section id="clients">
+    <div class="card">
+      <div class="two">
+        <label>Name<input id="cName" /></label>
+        <label>Surname<input id="cSurname" /></label>
+      </div>
+      <label>Contact number<input id="cPhone" inputmode="tel" /></label>
+      <label>Email<input id="cEmail" type="email" /></label>
+      <label>Address<textarea id="cAddress" rows="2"></textarea></label>
+      <button class="btn" id="saveClient">Save client</button>
+    </div>
+    <div id="clientList"></div>
+  </section>
+
+  <section id="invoice" class="hidden">
+    <div class="card">
+      <label>Client<select id="clientPick"></select></label>
+      <label>Date<input id="invDate" type="date" /></label>
+      <div class="two">
+        <label>Hours<input id="hours" type="number" min="0" step="0.25" value="4" /></label>
+        <label>Rate per hour ($)<input id="rate" type="number" min="0" step="0.5" value="40" /></label>
+      </div>
+      <p class="fine">Extra services — tick to add, change the price if needed.</p>
+      <div id="extras"></div>
+      <button class="btn ghost" id="addExtra" type="button">Add custom extra</button>
+      <div class="row" style="margin-top:14px"><span>Total</span><span class="total" id="total">$0</span></div>
+      <button class="btn" id="makeInvoice" style="margin-top:12px">Create invoice</button>
+    </div>
+  </section>
+
+  <section id="preview" class="hidden">
+    <div class="invoice" id="sheet"></div>
+    <div class="two" style="margin-top:12px">
+      <button class="btn" id="share">Share</button>
+      <button class="btn ghost" id="print">Print / PDF</button>
+    </div>
+  </section>
+</main>
+<script>
+const DEFAULT_EXTRAS = [
+  ["Inside oven", 30], ["Inside fridge", 20], ["Interior windows", 5], ["Sliding windows", 20],
+  ["Pet hair", 20], ["Laundry, one load", 20], ["Bed linen", 10], ["Dishes", 15],
+  ["Baseboards", 20], ["Decluttering", 30], ["Ceiling fans", 10], ["Inside cabinets", 25], ["Microwave", 8], ["Supplies", 10]
+];
+const $ = id => document.getElementById(id);
+let clients = JSON.parse(localStorage.getItem("ma-clients") || "[]");
+let extras = DEFAULT_EXTRAS.map(([name, price]) => ({ name, price, on: false }));
+let editing = null;
+
+function save() { localStorage.setItem("ma-clients", JSON.stringify(clients)); }
+function money(n) { return "$" + Number(n || 0).toFixed(2); }
+
+function renderClients() {
+  $("clientList").innerHTML = clients.map((c, i) => `
+    <div class="card client">
+      <div><b>${c.name} ${c.surname}</b><span class="fine">${c.phone} · ${c.email}<br>${c.address}</span></div>
+      <div><button class="btn small ghost" data-edit="${i}">Edit</button></div>
+    </div>`).join("") || `<p class="fine">No clients yet.</p>`;
+  const pick = $("clientPick");
+  pick.innerHTML = clients.map((c, i) => `<option value="${i}">${c.name} ${c.surname}</option>`).join("");
+}
+function renderExtras() {
+  $("extras").innerHTML = extras.map((e, i) => `
+    <div class="extra">
+      <label class="check" style="margin:0"><input type="checkbox" data-on="${i}" ${e.on ? "checked" : ""} /> ${e.name}</label>
+      <input type="number" data-price="${i}" value="${e.price}" />
+      <button class="btn small ghost" data-del="${i}">×</button>
+    </div>`).join("");
+  calc();
+}
+function calc() {
+  const hours = Number($("hours").value) || 0;
+  const rate = Number($("rate").value) || 0;
+  const extra = extras.filter(e => e.on).reduce((s, e) => s + Number(e.price || 0), 0);
+  $("total").textContent = money(hours * rate + extra);
+}
+function show(tab) {
+  document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
+  ["clients", "invoice", "preview"].forEach(id => $(id).classList.toggle("hidden", id !== tab));
+}
+document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => show(b.dataset.tab));
+$("newInvoice").onclick = () => show("invoice");
+$("saveClient").onclick = () => {
+  const client = { name: $("cName").value.trim(), surname: $("cSurname").value.trim(), phone: $("cPhone").value.trim(), email: $("cEmail").value.trim(), address: $("cAddress").value.trim() };
+  if (!client.name) return alert("Name is required.");
+  if (editing === null) clients.push(client); else clients[editing] = client;
+  editing = null;
+  try { save(); } catch (e) { return alert("Could not save on this page. Open it from the website, not from iCloud."); }
+  renderClients();
+  ["cName","cSurname","cPhone","cEmail","cAddress"].forEach(id => $(id).value = "");
+  alert("Client saved.");
+};
+$("clientList").onclick = e => {
+  const i = e.target.dataset.edit;
+  if (i === undefined) return;
+  const c = clients[i];
+  $("cName").value = c.name; $("cSurname").value = c.surname; $("cPhone").value = c.phone; $("cEmail").value = c.email; $("cAddress").value = c.address;
+  editing = Number(i);
+};
+$("extras").onchange = e => {
+  if (e.target.dataset.on !== undefined) extras[e.target.dataset.on].on = e.target.checked;
+  if (e.target.dataset.price !== undefined) extras[e.target.dataset.price].price = Number(e.target.value);
+  calc();
+};
+$("extras").onclick = e => {
+  if (e.target.dataset.del === undefined) return;
+  extras.splice(e.target.dataset.del, 1);
+  renderExtras();
+};
+$("addExtra").onclick = () => { extras.push({ name: "Custom", price: 0, on: true }); renderExtras(); };
+["hours","rate"].forEach(id => $(id).oninput = calc);
+$("invDate").value = new Date().toISOString().slice(0, 10);
+
+$("makeInvoice").onclick = () => {
+  if (!clients.length) return alert("Save a client first.");
+  const c = clients[$("clientPick").value];
+  const hours = Number($("hours").value) || 0;
+  const rate = Number($("rate").value) || 0;
+  const chosen = extras.filter(e => e.on);
+  const total = hours * rate + chosen.reduce((s, e) => s + Number(e.price || 0), 0);
+  const lines = [`<div class="line"><span>Cleaning · ${hours} hrs × ${money(rate)}</span><span>${money(hours * rate)}</span></div>`]
+    .concat(chosen.map(e => `<div class="line"><span>${e.name}</span><span>${money(e.price)}</span></div>`)).join("");
+  $("sheet").innerHTML = `
+    <div class="inv-head">
+      <div class="brand">Mommy <span>America</span></div>
+      <div class="tag">You live. I clean.</div>
+      <div class="inv-meta"><span>INVOICE</span><span>${$("invDate").value}</span></div>
+    </div>
+    <div class="inv-body">
+      <div class="billto">
+        <div class="fine">Billed to</div>
+        <b>${c.name} ${c.surname}</b><br>
+        ${c.phone}<br>${c.email}<br>${c.address}
+      </div>
+      ${lines}
+      <div class="grand"><span>Total due</span><span>${money(total)}</span></div>
+    </div>
+    <div class="inv-foot"><span>Mommy America Cleaning</span><span>346-833-5791</span></div>`;
+  show("preview");
+};
+$("print").onclick = () => window.print();
+$("share").onclick = async () => {
+  const text = $("sheet").innerText;
+  if (navigator.share) navigator.share({ title: "Mommy America invoice", text });
+  else { await navigator.clipboard.writeText(text); alert("Invoice copied."); }
+};
+renderClients(); renderExtras();
+</script>
+</body>
+</html>
