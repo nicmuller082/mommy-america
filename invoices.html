@@ -47,7 +47,15 @@ input, select, textarea { width:100%; margin-top:4px; border:1px solid var(--lin
 </style>
 </head>
 <body>
-<header><h1>Mommy <span>America</span></h1><button class="btn small" id="newInvoice" style="width:auto">New invoice</button></header>
+<div id="gate" class="card" style="margin:16px">
+  <h2 style="margin:0 0 8px;color:#16315f">Invoices</h2>
+  <p class="fine">Enter the password to continue.</p>
+  <label>Password<input id="gatePass" type="password" /></label>
+  <button class="btn" id="gateBtn">Open</button>
+  <p class="fine" id="gateMsg"></p>
+</div>
+<div id="app" class="hidden">
+<header><h1>Mommy <span>America</span></h1><button class="btn small" id="newInvoice" style="width:auto">New invoice</button><button class="btn small ghost" id="logout" style="width:auto">Lock</button></header>
 <div class="tabs">
   <button class="on" data-tab="clients">Clients</button>
   <button data-tab="invoice">Invoice</button>
@@ -92,6 +100,7 @@ input, select, textarea { width:100%; margin-top:4px; border:1px solid var(--lin
     </div>
   </section>
 </main>
+</div>
 <script>
 const DEFAULT_EXTRAS = [
   ["Inside oven", 30], ["Inside fridge", 20], ["Interior windows", 5], ["Sliding windows", 20],
@@ -200,7 +209,26 @@ $("share").onclick = async () => {
   if (navigator.share) navigator.share({ title: "Mommy America invoice", text });
   else { await navigator.clipboard.writeText(text); alert("Invoice copied."); }
 };
-renderClients(); renderExtras();
+$("gateBtn").onclick = async () => {
+  const response = await fetch("/api/invoice-login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: $("gatePass").value }) });
+  const data = await response.json();
+  if (!data.ok) return $("gateMsg").textContent = data.error || "Wrong password.";
+  openApp();
+};
+$("logout").onclick = async () => {
+  await fetch("/api/invoice-logout", { method: "POST" });
+  $("app").classList.add("hidden");
+  $("gate").classList.remove("hidden");
+};
+async function checkGate() {
+  const data = await fetch("/api/invoice-auth").then(r => r.json()).catch(() => ({ ok: false }));
+  if (data.ok) openApp();
+}
+function openApp() {
+  $("gate").classList.add("hidden");
+  $("app").classList.remove("hidden");
+}
+checkGate();
 </script>
 </body>
 </html>

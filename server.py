@@ -8,9 +8,10 @@ from email.message import EmailMessage
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory, session
 
 app = Flask(__name__, static_folder=".", static_url_path="")
+app.secret_key = os.environ.get("SECRET_KEY", "mommy-america-invoices")
 TZ = ZoneInfo("America/Chicago")
 WATCH = {"personal": "Work", "family": "Family"}
 
@@ -50,7 +51,27 @@ def watched_name(label):
     return os.environ.get(f"ICLOUD_{label.upper()}_CALENDAR", WATCH[label])
 
 
-@app.get("/api/status")
+@app.post("/api/invoice-login")
+def invoice_login():
+    password = (request.get_json(force=True) or {}).get("password", "")
+    expected = os.environ.get("INVOICE_PASSWORD", "")
+    if not expected:
+        return jsonify(ok=False, error="Set INVOICE_PASSWORD on the server."), 400
+    if password != expected:
+        return jsonify(ok=False, error="Wrong password."), 401
+    session["invoices"] = True
+    return jsonify(ok=True)
+
+
+@app.get("/api/invoice-auth")
+def invoice_auth():
+    return jsonify(ok=bool(session.get("invoices")))
+
+
+@app.post("/api/invoice-logout")
+def invoice_logout():
+    session.pop("invoices", None)
+    return jsonify(ok=True)
 def status():
     found = accounts()
     if not found:
